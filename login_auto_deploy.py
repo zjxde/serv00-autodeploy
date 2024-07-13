@@ -390,11 +390,11 @@ class AutoServ(object):
 
 if __name__ == "__main__":
     args = sys.argv
-    with open('user_info.json', 'r') as f:
+    with open('USER_INFO.json', 'r') as f:
         userInfo = json.load(f)
-    with open('account.json', 'r') as f:
+    with open('ACCOUNT.json', 'r') as f:
         account = json.load(f)
-    #print(userInfo)
+    print(userInfo)
     #args = ['python','keepalive',60]
     cmd = userInfo['cmd']
     args = cmd.split()

@@ -27,7 +27,7 @@
 ```
 1、转到你 fork 的仓库页面。
 2、点击 Settings，然后在左侧菜单中选择 Secrets。
-3、添加以下 variables 名称：user_info (包含账号环境参数配置信息的 JSON 数据)。值为如下：
+3、添加以下 secrets 名称：USER_INFO (包含账号环境参数配置信息的 JSON 数据)。值为如下：
 {
     "domain": "【域名，必填】",
     "basepath": "【部署路径，可以不填】",
@@ -48,7 +48,7 @@
     "nodejs_name": "index",【默认即可】
     }
 }
-5、添加以下 secrets 名称：account(包含账号密码信息信息的 JSON 数据)。例如：
+5、添加以下 secrets 名称：ACCOUNT(包含账号密码信息信息的 JSON 数据)。例如：
 {
   "username": "【用户名】",
   "password": "【密码】",
