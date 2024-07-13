@@ -17,14 +17,14 @@ jobs:
           python-version: '3.x'  # 设置你希望使用的 Python 版本，建议使用稳定版本
 
       - name: Create user_info.json from environment variable
-        run: echo "$user_info > user_info.json
+        run: echo "$USER_INFO > user_info.json
         env:
-          user_info.json: ${{ variables.user_info}}  # 从GitHub Secrets中获取环境变量
+          user_info.json: ${{ variables.USER_INFO}}  # 从GitHub Secrets中获取环境变量
 
       - name: Create account.json from environment variable
-        run: echo "$account > account.json
+        run: echo "$ACCOUNT > account.json
         env:
-          account.json: ${{ variables.account}}  # 从GitHub variables中获取环境变量
+          account.json: ${{ secrets.ACCOUNT}}  # 从GitHub variables中获取环境变量
 
       - name: 安装依赖
         run: |
@@ -33,8 +33,8 @@ jobs:
 
       - name: 运行登录脚本
         env:
-          user_info.json: ${{ variables.user_info }}
-          account.json: ${{ secrets.user_info }}
+          user_info.json: ${{ variables.USER_INFO }}
+          account.json: ${{ secrets.ACCOUNT }}
 
         run: |
           python login_auto_deploy.py
