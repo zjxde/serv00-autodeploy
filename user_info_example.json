@@ -4,6 +4,7 @@
   "domain": "【域名】",
   "basepath": "【部署路径，可以不填】",
   "pannelnum": 6,
+  "cmd":"python reset 60",
   "uuid_ports": [
     {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},
     {"uuid": "5ccac840-3c3b-11ef-b292-005056c00008", "port": 0},

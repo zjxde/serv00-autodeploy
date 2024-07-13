@@ -393,10 +393,12 @@ if __name__ == "__main__":
         userInfo = json.load(f)
     #print(userInfo)
     #args = ['python','keepalive',60]
-
+    cmd = userInfo['cmd']
+    args = cmd.split()
     outoServ = AutoServ(userInfo)
     ssh = outoServ.ssh
     logger = outoServ.logger;
+    logger.info("cmd::"+cmd)
     if args and len(args) ==2:
         cmd = args[1]
         logger.info(cmd)

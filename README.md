@@ -34,7 +34,8 @@
     "password": "【密码,必填】",
     "domain": "【域名，必填】",
     "basepath": "【部署路径，可以不填】",
-    "pannelnum": 6, 【serv00机器号，必填】
+    "pannelnum": 6, 【serv00机器号，必填】,
+    "cmd":"python reset 60"【必填】reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间
     "uuid_ports": [
     {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},【可修改自己的uuid值，也可以不修改,port值默认即可】
     {"uuid": "5ccac840-3c3b-11ef-b292-005056c00008", "port": 0},
