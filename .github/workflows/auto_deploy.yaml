@@ -35,8 +35,8 @@ jobs:
 
       - name: 运行登录脚本
         env:
-          user_info.json: ${{ secrets.USER_INFO }}
-          account.json: ${{ secrets.ACCOUNT }}
+          USER_INFO: ${{ secrets.USER_INFO }}
+          ACCOUNT: ${{ secrets.ACCOUNT }}
 
         run: |
           python login_auto_deploy.py
