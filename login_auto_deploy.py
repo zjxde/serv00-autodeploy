@@ -234,12 +234,33 @@ class AutoServ(object):
                 createcmd = " mkdir -p "+self.BASEPATH
                 self.executeCmd(ssh, createcmd,5)
                 self.logger.info(createcmd + "::: create finish")
-                wget = cdcmd +self.CODE_SOURCE_URL
-                self.executeCmd(ssh, wget,60)
-                self.logger.info(wget+"::: finish")
+                wget = self.CODE_SOURCE_URL +" "+pidfullpath
+                timeout = 20
+                lscmd = "ls "+pidfullpath+" |grep "+self.NODEJS_NAME
+                #self.executeCmd(ssh, lscmd,5)
+                stdin, stdout, stderr = self.ssh.exec_command(lscmd,get_pty=True)
+                res = stdout.read().decode()
+                files = res.split('\r\n')
+                delayTime = 5
+                while (files and 'No such' in files[0]) or timeout >=0:
+                    #self.ssh.executeCmd(ssh, wget,5)
+                    #stdin, stdout, stderr = self.ssh.exec_command(wget,get_pty=True)
+                    #res = stdout.read().decode()
+                    #wgetres = res.split('\r\n')
+                    #self.logger.info( wget+"::"+wgetres[0])
+                    files = self.executeNewCmd(ssh, wget,120)[0]
+                    self.logger.info(files)
+                    timeout = timeout-delayTime
+                    stdin, stdout, stderr = self.ssh.exec_command(lscmd,get_pty=True)
+                    res = stdout.read().decode()
+                    files = res.split('\r\n')
+                    self.logger.info("main js ::"+files[0])
+                    self.logger.info(wget+"::: try timeout::"+str(timeout))
+                    time.sleep(delayTime)
+
                 #npmInstall = "cd "+BASEPATH+PIDPATH+" && npm install"
                 npmInstall = "unzip "+ pidfullpath+"/node_modules.zip -d "+pidfullpath
-                self.executeCmd(ssh,npmInstall,100)
+                self.executeCmd(ssh,npmInstall,60)
                 self.logger.info(npmInstall + ":::  finish")
 
             cpcmd = 'cp '+self.FULLPATH+'.js '+self.FULLPATH+'-template.js'
@@ -252,20 +273,25 @@ class AutoServ(object):
             self.logger.error(":::env init error::" +e)
     #远程执行相关命令
     def executeCmd(self,ssh, cmd,waitTime):
-        stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
+        stdin, stdout, stderr = ssh.exec_command(cmd,timeout=waitTime,get_pty=True)
         try:
             self.logger.info(cmd +" execute start.....")
             while not stdout.channel.exit_status_ready():
                 result = stdout.readlines()
-                self.logger.debug(result)
+                self.logger.info(result)
                 if stdout.channel.exit_status_ready():
                     res = stdout.readlines;
-                    self.logger.debug(res)
+                    self.logger.info(res)
                     break
             self.logger.info(cmd +" execute finish.....")
-            time.sleep(waitTime)
         except Exception as e:
-            print(e)
+            self.logger.error("execute cmd error")
+    #执行命令返回结果
+    def executeNewCmd(self,ssh,cmd,waitTime):
+        stdin, stdout, stderr = ssh.exec_command(cmd,timeout=waitTime,get_pty=True)
+        res = stdout.read().decode()
+        files = res.split('\r\n')
+        return files,stdin,stdout,stderr
     #杀死现有节点进程
     def killPid(self,ssh):
         #ssh = getSshClient()
@@ -438,7 +464,7 @@ if __name__ == "__main__":
 
         except Exception as e:
                 print(e)
-                logger.error("参数必须为 reset restart keepalive +正整数")
+                logger.error(e)
                 ssh.close()
 
 
