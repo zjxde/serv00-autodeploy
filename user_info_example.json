@@ -1,0 +1,28 @@
+{
+  "username": "【用户名】",
+  "password": "【密码】",
+  "domain": "【域名】",
+  "basepath": "【部署路径，可以不填】",
+  "pannelnum": 6,
+  "uuid_ports": [
+    {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},
+    {"uuid": "5ccac840-3c3b-11ef-b292-005056c00008", "port": 0},
+    {"uuid": "6adcae4e-16cc-443d-98c0-49f5c5dd46b9", "port": 0}
+  ],
+  "env_config": {
+    "reset": 1,
+    "node_num": 3,
+    "outo_npm_install": 1,
+    "code_source_url": "git clone http://github.com/zjxde/serv00-ws",
+    "send_tg": 0,
+    "kill_pid_path": "serv00",
+    "nodejs_name": "index",
+    "proxies": ["test1.com","test2.com"]
+
+  },
+  "tg_config": {
+    "tg_bot_token": "【申请tg机器人的token】",
+    "tg_chat_id": "【Chat ID】"
+  }
+
+}
