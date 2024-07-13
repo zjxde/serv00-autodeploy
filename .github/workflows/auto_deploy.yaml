@@ -21,7 +21,7 @@ jobs:
       - name: Create user_info.json from environment variable
         run: echo "$USER_INFO" > user_info.json
         env:
-          user_info.json: ${{ env.USER_INFO}}  # 从GitHub Secrets中获取环境变量
+          user_info.json: ${{ secrets.USER_INFO}}  # 从GitHub Secrets中获取环境变量
 
       - name: Create account.json from environment variable
         run: echo "$ACCOUNT" > account.json
@@ -35,7 +35,7 @@ jobs:
 
       - name: 运行登录脚本
         env:
-          user_info.json: ${{ env.USER_INFO }}
+          user_info.json: ${{ secrets.USER_INFO }}
           account.json: ${{ secrets.ACCOUNT }}
 
         run: |
