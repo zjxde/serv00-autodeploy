@@ -48,9 +48,11 @@ class AutoServ(object):
         self.TG_BOT_TOKEN = acount['tg_bot_token']
         self.TG_CHAT_ID = acount['tg_chat_id']
         self.proxy = ''
+        """
         proxies = envConfig['proxies']
         if proxies:
             self.PROXIES = proxies[random.randint(0,len(proxies)-1)]
+        """
         self.configInfo = userInfo['uuid_ports']
 
         #self.PANNELNUM = 6
@@ -220,30 +222,29 @@ class AutoServ(object):
     #自动安装部署node等运行环境
     def resetEnv(self,ssh,outoNpmInstall):
 
-        cdcmd = "cd "+self.BASEPATH +"&& "
-        try:
 
-            rmcmd = " rm -rf "+self.BASEPATH
-            self.executeCmd(ssh, rmcmd,5)
-            self.logger.info(rmcmd + "::: finish")
-            createcmd = " mkdir -p "+self.BASEPATH
-            self.executeCmd(ssh, createcmd,5)
-            self.logger.info(createcmd + "::: create finish")
-            wget = cdcmd +self.CODE_SOURCE_URL
-            self.executeCmd(ssh, wget,60)
-            self.logger.info(wget+"::: finish")
-            cpcmd = 'cp '+self.FULLPATH+'.js '+self.FULLPATH+'-template.js'
-            self.executeCmd(ssh, cpcmd,5)
-            self.logger.info(cpcmd + ":::finish")
+        try:
             pidfullpath = self.BASEPATH+"/"+self.PIDPATH
             #此方法耗时较长 取决你的网络环境，若等待时间超时，请手动r执行npm install
             if outoNpmInstall:
+                cdcmd = "cd "+self.BASEPATH +"&& "
+                rmcmd = " rm -rf "+self.BASEPATH
+                self.executeCmd(ssh, rmcmd,5)
+                self.logger.info(rmcmd + "::: finish")
+                createcmd = " mkdir -p "+self.BASEPATH
+                self.executeCmd(ssh, createcmd,5)
+                self.logger.info(createcmd + "::: create finish")
+                wget = cdcmd +self.CODE_SOURCE_URL
+                self.executeCmd(ssh, wget,60)
+                self.logger.info(wget+"::: finish")
                 #npmInstall = "cd "+BASEPATH+PIDPATH+" && npm install"
                 npmInstall = "unzip "+ pidfullpath+"/node_modules.zip -d "+pidfullpath
                 self.executeCmd(ssh,npmInstall,100)
                 self.logger.info(npmInstall + ":::  finish")
 
-
+            cpcmd = 'cp '+self.FULLPATH+'.js '+self.FULLPATH+'-template.js'
+            self.executeCmd(ssh, cpcmd,5)
+            self.logger.info(cpcmd + ":::finish")
             self.logger.info("init env is ok....")
 
 
@@ -337,7 +338,7 @@ class AutoServ(object):
     #获取nodejs文件名字
     def getNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
-        cmd = "ls "+pidfullpath +" | grep 'index_.*\.js'"
+        cmd = "ls "+pidfullpath +" | grep 'index_.*.js'"
         stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
         res = stdout.read().decode()
         filenames = res.split('\r\n')
