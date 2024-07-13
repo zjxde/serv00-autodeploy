@@ -44,7 +44,7 @@ class AutoServ(object):
         #self.APP_PATH = os.getenv('app_path')
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
         self.CODE_SOURCE_URL = envConfig['code_source_url']
-        tgConfig = userInfo['tg_config']
+        #tgConfig = userInfo['tg_config']
         self.TG_BOT_TOKEN = acount['tg_bot_token']
         self.TG_CHAT_ID = acount['tg_chat_id']
         self.proxy = ''
@@ -389,24 +389,8 @@ class AutoServ(object):
 
 
 if __name__ == "__main__":
-    json_str = '''
-    {
-        "user": "阳光欢子",
-        "links": {
-            "zhihu": "https://www.zhihu.com/people/chen-zhi-gao-45-80",
-            "jianshu": "https://www.jianshu.com/u/d5e198d8f025"
-        }
-    }
-    '''
-
-    python_object = json.loads(json_str)
-
-    print(type(python_object))
-    print(python_object)
     accountstr = os.getenv('ACCOUNT')
-    print(accountstr)
     userinfostr = os.getenv('USER_INFO')
-    print(userinfostr)
     args = sys.argv
     with open('user_info.json', 'r') as f:
         userInfo = json.load(f)
