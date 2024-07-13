@@ -389,6 +389,20 @@ class AutoServ(object):
 
 
 if __name__ == "__main__":
+    json_str = '''
+    {
+        "user": "阳光欢子",
+        "links": {
+            "zhihu": "https://www.zhihu.com/people/chen-zhi-gao-45-80",
+            "jianshu": "https://www.jianshu.com/u/d5e198d8f025"
+        }
+    }
+    '''
+
+    python_object = json.loads(json_str)
+
+    print(type(python_object))
+    print(python_object)
     args = sys.argv
     with open('USER_INFO.json', 'r') as f:
         userInfo = json.load(f)
