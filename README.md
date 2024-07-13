@@ -1,4 +1,4 @@
-serv00与ct8自动化部署启动，保活，并且可发送消息到Telegram
+serv00自动化部署启动，保活，并且可发送消息到Telegram
 利用github Action以及python脚本实现
 🙏🙏🙏点个Star！！Star！！Star！！
 将代码fork到你的仓库并运行的操作步骤
