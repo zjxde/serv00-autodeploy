@@ -1,8 +1,10 @@
-name: Run autodeploy Script
+name: auto deploy
+
 on:
   push:
     branches:
       - main
+
 jobs:
   login:
     runs-on: ubuntu-latest
