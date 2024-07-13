@@ -18,16 +18,16 @@ from logger import Mylogger
 """
 class AutoServ(object):
 
-    def __init__(self,userInfo):
+    def __init__(self,userInfo,acount):
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
 
          # 从环境变量中获取通道数 用户名 密码
          # 域名 app.js部署的根路径 如：/home/XXX[用户名]/domains/XXX[域名]/app/serv00-ws/
          #服务器编号 如 https://panel6.serv00.com/ 中的6
         self.PANNELNUM = userInfo["pannelnum"]
-        self.USERNAME = userInfo["username"]
+        self.USERNAME = acount["username"]
         #密码
-        self.PASSWORD = userInfo["password"]
+        self.PASSWORD = acount["password"]
         # 根路径 默认以app命名
         self.BASEPATH = userInfo["basepath"]
         #域名
@@ -45,8 +45,8 @@ class AutoServ(object):
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
         self.CODE_SOURCE_URL = envConfig['code_source_url']
         tgConfig = userInfo['tg_config']
-        self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
-        self.TG_CHAT_ID = tgConfig['tg_chat_id']
+        self.TG_BOT_TOKEN = acount['tg_bot_token']
+        self.TG_CHAT_ID = acount['tg_chat_id']
         self.proxy = ''
         proxies = envConfig['proxies']
         if proxies:
@@ -391,11 +391,13 @@ if __name__ == "__main__":
     args = sys.argv
     with open('user_info.json', 'r') as f:
         userInfo = json.load(f)
+    with open('account.json', 'r') as f:
+        account = json.load(f)
     #print(userInfo)
     #args = ['python','keepalive',60]
     cmd = userInfo['cmd']
     args = cmd.split()
-    outoServ = AutoServ(userInfo)
+    outoServ = AutoServ(userInfo,account)
     ssh = outoServ.ssh
     logger = outoServ.logger;
     logger.info("cmd::"+cmd)

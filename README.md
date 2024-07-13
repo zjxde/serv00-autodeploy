@@ -27,11 +27,8 @@
 ```
 1、转到你 fork 的仓库页面。
 2、点击 Settings，然后在左侧菜单中选择 Secrets。
-3、添加以下 Secrets：
-4、user_info.json: 包含账号信息的 JSON 数据。例如：
+3、添加以下 variables 名称：user_info (包含账号环境参数配置信息的 JSON 数据)。值为如下：
 {
-    "username": "【用户名,必填】",
-    "password": "【密码,必填】",
     "domain": "【域名，必填】",
     "basepath": "【部署路径，可以不填】",
     "pannelnum": 6, 【serv00机器号，必填】,
@@ -49,12 +46,14 @@
     "send_tg": 0,【是否需要发送节点url到telegram】
     "kill_pid_path": "serv00",【默认即可】
     "nodejs_name": "index",【默认即可】
-    "proxies": ["test1.com","test2.com"]【默认即可】
-    },
-    "tg_config": {
-    "tg_bot_token": "【申请tg机器人的token】",
-    "tg_chat_id": "【Chat ID】"
     }
+}
+5、添加以下 secrets 名称：account(包含账号密码信息信息的 JSON 数据)。例如：
+{
+  "username": "【用户名】",
+  "password": "【密码】",
+  "tg_bot_token": "【申请tg机器人的token】",
+  "tg_chat_id": "【Chat ID】"
 }
 ```
 
@@ -65,7 +64,7 @@
     》在你的 fork 仓库中，进入 Actions 页面。
     》如果 Actions 没有自动启用，点击 Enable GitHub Actions 按钮以激活它。
 2、运行工作流 
-    》GitHub Actions 将会根据你设置的定时任务（例如每三天一次）自动运行脚本。
+    》GitHub Actions 将会根据你设置自动运行脚本。
     》如果需要手动触发，可以在 Actions 页面手动运行工作流。
 ```
 
