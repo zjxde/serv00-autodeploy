@@ -1,6 +1,4 @@
 {
-  "username": "【用户名】",
-  "password": "【密码】",
   "domain": "【域名】",
   "basepath": "【部署路径，可以不填】",
   "pannelnum": 6,
@@ -20,10 +18,5 @@
     "nodejs_name": "index",
     "proxies": ["test1.com","test2.com"]
 
-  },
-  "tg_config": {
-    "tg_bot_token": "【申请tg机器人的token】",
-    "tg_chat_id": "【Chat ID】"
   }
-
 }
