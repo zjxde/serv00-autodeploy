@@ -403,10 +403,14 @@ if __name__ == "__main__":
 
     print(type(python_object))
     print(python_object)
+    accountstr = os.getenv('ACCOUNT')
+    print(accountstr)
+    userinfostr = os.getenv('USER_INFO')
+    print(userinfostr)
     args = sys.argv
-    with open('USER_INFO.json', 'r') as f:
+    with open('user_info.json', 'r') as f:
         userInfo = json.load(f)
-    with open('ACCOUNT.json', 'r') as f:
+    with open('account.json', 'r') as f:
         account = json.load(f)
     print(userInfo)
     #args = ['python','keepalive',60]

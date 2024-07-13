@@ -18,13 +18,13 @@ jobs:
         with:
           python-version: '3.12.3'  # 设置你希望使用的 Python 版本，建议使用稳定版本
 
-      - name: Create USER_INFO.json from environment variable
-        run: echo "$USER_INFO" > USER_INFO.json
+      - name: Create user_info.json from environment variable
+        run: echo "$USER_INFO" > user_info.json
         env:
           user_info.json: ${{ secrets.USER_INFO}}  # 从GitHub Secrets中获取环境变量
 
-      - name: Create ACCOUNT.json from environment variable
-        run: echo "$ACCOUNT" > ACCOUNT.json
+      - name: Create account.json from environment variable
+        run: echo "$ACCOUNT" > account.json
         env:
           account.json: ${{ secrets.ACCOUNT}}  # 从GitHub variables中获取环境变量
 
