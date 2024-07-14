@@ -499,7 +499,7 @@ class AutoServ(object):
 
 
 if __name__ == "__main__":
-    cmd = os.getenv("cmd")
+    cmd = os.getenv("CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
     with open('user_info.json', 'r') as f:
