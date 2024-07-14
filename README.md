@@ -27,7 +27,8 @@
 ```
 1、转到你 fork 的仓库页面。
 2、点击 Settings，然后在左侧菜单中选择 Secrets。
-3、【此值可不配置】打开项目 account_example.json 文件 按以下说明添加 找到Setting->Secrets->actions 添加secrets名称：ENV_CONFIG (包含账号环境参数配置信息的 JSON 数据)。值为如下 ，默认即可：
+3、【此值需简单配置】打开项目 default_config.json 文件,全部复制 按以下说明secrets名称为ENV_CONFIG， 通过Setting->Secrets->actions找到 ENV_CONFIG (包含账号环境参数配置信息的 JSON 数据)。值为如下 ，默认即可：
+   注意:【】内容只是配置说明，配置时必须包括中括号都要删除
 {
   "uuid_ports": [
     {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},【可修改自己的uuid值，也可以不修改,port值默认即可】
@@ -44,6 +45,7 @@
   }
 }
 5、【必须配置】打开项目 user_info_example.json 按照以下说明添加 找到Setting->Secrets->actions 添加secrets名称：USER_INFO(包含账号密码信息信息的 JSON 数据)。，例如：
+    注意:【】内容只是配置说明，配置时必须包括中括号都要删除
 {
   "tg_config": {
     "tg_bot_token": "【申请tg机器人的token】",
