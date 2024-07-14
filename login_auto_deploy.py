@@ -175,7 +175,7 @@ class AutoServ(object):
         msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
         self.logger.info("url is::"+msg)
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
-        self.startCmd(self,templateName,port,ssh)
+        self.startCmd(templateName,port,ssh)
         #异步发送节点链接到tg
         if self.SEND_TG:
             self.sendTgMsgSync(msg)
@@ -434,7 +434,7 @@ class AutoServ(object):
                         ouuid = self.uuidPorts[port]
                         msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                         self.logger.info("url is::"+msg)
-                        self.startCmd(self,templateName,port,ssh)
+                        self.startCmd(templateName,port,ssh)
 
                 time.sleep(waitTime)
                 self.logger.info(self.USERNAME+" nodes keepalive")
