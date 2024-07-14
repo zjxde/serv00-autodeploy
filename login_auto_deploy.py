@@ -446,7 +446,7 @@ class AutoServ(object):
                 self.logger.info(self.USERNAME+" nodes keepalive")
             except Exception as e:
                 print(f"keepAlive error: {e}")
-                self.logger.error("keepAlive error")
+                self.logger.error(self.USERNAME+" keepAlive error")
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
         outoServ = AutoServ(defaultConfig,account,tgConfig)
