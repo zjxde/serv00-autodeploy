@@ -36,7 +36,6 @@
   ],
   "env_config": {
     "reset": 1,【是否需要重置环境】
-    "node_num": 3,【开启节点个数，由于节点serv00端口限制，最多可设3个】
     "outo_npm_install": 1,【默认即可】
     "code_source_url": "git clone http://github.com/zjxde/serv00-ws",
     "kill_pid_path": "serv00",【默认即可】
@@ -49,7 +48,8 @@
   "tg_config": {
     "tg_bot_token": "【申请tg机器人的token】",
     "tg_chat_id": "【Chat ID】",
-    "send_tg": 0 【是否需要发送节点信息到telegram】
+    "send_tg": 0 ,【是否需要发送节点信息到telegram】
+    "node_num": 3,【开启节点个数，由于节点serv00端口限制，最多可设3个】
     "usepm2": 1 【是否开启pm2】
   },
   "accounts": [    【ACCOUNT此项配置优先级比ENV_CONFIG要高,支持多个账号批量部署】

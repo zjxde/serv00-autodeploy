@@ -6,7 +6,6 @@
   ],
   "env_config": {
     "reset": 1,
-    "node_num": 1,
     "outo_npm_install": 1,
     "code_source_url": "git clone http://github.com/zjxde/serv00-ws",
     "send_tg": 1,
