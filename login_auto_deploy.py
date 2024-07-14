@@ -82,7 +82,7 @@ class AutoServ(object):
         #self.loop = asyncio.get_event_loop()
 
         self.KILL_PID_PATH = envConfig['kill_pid_path']
-
+        self.pm2path =  '/home/'+self.USERNAME+'/.npm-global/bin/pm2'
 
         if self.PANNELNUM is None:
             self.logger.error('please set the pannelnum')
@@ -215,7 +215,7 @@ class AutoServ(object):
                     if len(uuidPorts) > 0 :
                         if port in uuidPorts:
                             uuidPorts.pop(port)
-            for i in range(0,3):
+            for i in range(0,self.NODE_NUM):
                 serv.addport(None)
 
             ports = serv.getports();
@@ -273,9 +273,9 @@ class AutoServ(object):
                     lsPm2 = pm2path+' list'
                     files = self.executeNewCmd(ssh, lsPm2,120)[0]
                     self.logger.info(files)
-                    if files and 'Instance' not in files:
-                        pm2="bash <(curl -s https://raw.githubusercontent.com/k0baya/alist_repl/main/serv00/install-pm2.sh)"
-                        files = self.executeNewCmd(ssh, pm2path+pm2,120)[0]
+                    if files and 'No such' in files[0]:
+                        pm2="npm install -g pm2"
+                        files = self.executeNewCmd(ssh, pm2,120)[0]
                         self.logger.info(files)
 
                 while (files and 'No such' in files[0]) or timeout >=0:
@@ -326,16 +326,22 @@ class AutoServ(object):
     #杀死现有节点进程
     def killPid(self,ssh):
         #ssh = getSshClient()
-        cmd = 'pgrep -f '+self.KILL_PID_PATH
-        stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
-        res = stdout.read().decode()
-        pids = res.split('\r\n')
-        if pids and len(pids) > 0:
-            for pid in pids:
-                if pid :
-                    pidcmd = 'kill -9 '+pid
-                    self.executeCmd(ssh,pidcmd,3)
-                    self.logger.info("kill pid::"+pid)
+
+        if self.USE_PM2:
+            pidcmd = self.pm2path + ' stop all'
+            self.executeNewCmd(ssh,pidcmd,3)
+            self.logger.info("pm2 kill all pid")
+        else:
+            cmd = 'pgrep -f '+self.KILL_PID_PATH
+            stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
+            res = stdout.read().decode()
+            pids = res.split('\r\n')
+            if pids and len(pids) > 0:
+                for pid in pids:
+                    if pid :
+                        pidcmd = 'kill -9 '+pid
+                        self.executeNewCmd(ssh,pidcmd,3)
+                        self.logger.info("kill pid::"+pid)
     # 发送节点到tg
     def sendTelegramMessage(self,message):
         url = f"https://api.telegram.org/bot{self.TG_BOT_TOKEN}/sendMessage"
