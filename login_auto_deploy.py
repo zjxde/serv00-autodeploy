@@ -44,7 +44,7 @@ class AutoServ(object):
         envConfig = defaultConfig["env_config"]
         #是否重置运行环境
         self.RESET = envConfig['reset']
-        self.USE_PM2 = envConfig['usepm2']
+        #self.USE_PM2 = envConfig['usepm2']
         #是否执行npm install命令 比较耗时建议不开启 手动执行
         self.OUTO_NPM_INSTALL = envConfig['outo_npm_install']
         # 部署节点个数
@@ -61,6 +61,7 @@ class AutoServ(object):
             self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
             self.TG_CHAT_ID = tgConfig['tg_chat_id']
             self.SEND_TG = tgConfig['send_tg']
+            self.USE_PM2 = tgConfig['usepm2']
         self.proxy = ''
         """
         proxies = envConfig['proxies']
