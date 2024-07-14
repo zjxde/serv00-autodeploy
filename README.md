@@ -86,6 +86,10 @@
 2、运行工作流 
     》GitHub Actions 将会根据你设置自动运行脚本。
     》如果需要手动触发，可以在 Actions 页面手动运行工作流。
+3、工作流文件有 
+    auto_deploy.yaml:一开始部署使用此任务
+    auto_restart.yaml : 可自定义命令重启服务器 注使用该使用需要手动配置 secrets 名称为 CMD，值为 py restart 60【推荐】 ，后面
+    的数值可按自己需求自行修改( 参数说明：reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间)
 ```
 
 ## (四).注意事项
