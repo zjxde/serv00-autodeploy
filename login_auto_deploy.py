@@ -44,6 +44,7 @@ class AutoServ(object):
         envConfig = defaultConfig["env_config"]
         #是否重置运行环境
         self.RESET = envConfig['reset']
+        self.USE_PM2 = envConfig['usepm2']
         #是否执行npm install命令 比较耗时建议不开启 手动执行
         self.OUTO_NPM_INSTALL = envConfig['outo_npm_install']
         # 部署节点个数
@@ -172,7 +173,7 @@ class AutoServ(object):
         msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
         self.logger.info("url is::"+msg)
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
-        ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
+        self.startCmd(self,templateName,port,ssh)
         #异步发送节点链接到tg
         if self.SEND_TG:
             self.sendTgMsgSync(msg)
@@ -184,7 +185,12 @@ class AutoServ(object):
             # 使用executor提交任务
             executor.submit(self.sendTelegramMessage,msg)
             pass
-
+    def startCmd(self,templateName,port,ssh):
+        if self.USE_PM2:
+            ssh.exec_command('/home/'+self.USERNAME+'/.npm-global/bin/pm2 start '+templateName+' --name vless')
+            ssh.exec_command('/home/'+self.USERNAME+'/.npm-global/bin/pm2 monitor')
+        else:
+            ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
     def main(self):
         try:
 
@@ -367,7 +373,7 @@ class AutoServ(object):
                     self.logger.info("url is::"+msg)
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
-                    self.ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
+                    self.startCmd(templateName,port,self.ssh)
                     if self.SEND_TG:
                         #tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
                         #self.loop.run_until_complete(asyncio.wait(tasklist))
@@ -423,8 +429,7 @@ class AutoServ(object):
                         ouuid = self.uuidPorts[port]
                         msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                         self.logger.info("url is::"+msg)
-
-                        self.ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
+                        self.startCmd(self,templateName,port,ssh)
 
                 time.sleep(waitTime)
                 self.logger.info(self.USERNAME+" nodes keepalive")
@@ -504,7 +509,7 @@ if __name__ == "__main__":
             for account in myAccounts:
                 executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
                 pass
-
+    #过时
     if myAccounts and len(myAccounts) == 0:
         for account in myAccounts:
             outoServ = AutoServ(defaultConfig,account,tgConfig)

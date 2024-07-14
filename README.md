@@ -50,6 +50,7 @@
     "tg_bot_token": "【申请tg机器人的token】",
     "tg_chat_id": "【Chat ID】",
     "send_tg": 0 【是否需要发送节点信息到telegram】
+    "usepm2": 1 【是否开启pm2】
   },
   "accounts": [    【ACCOUNT此项配置优先级比ENV_CONFIG要高,支持多个账号批量部署】
     {
