@@ -2,6 +2,8 @@
 import asyncio
 import random
 import uuid
+from concurrent.futures import ThreadPoolExecutor
+
 import paramiko
 import os
 import logging
@@ -13,26 +15,33 @@ import requests
 from paramiko import SSHClient
 from serv import Serv00
 from logger import Mylogger
+from sshs import SSHClientManagement
+
 """
 重启，保活，端口被禁，可自动申请端口，自动部署环境
 """
 class AutoServ(object):
 
-    def __init__(self,userInfo,acount):
-        self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
+    def __init__(self, defaultConfig, acount,tgConfig):
 
+        self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
+        if acount['uuid_ports']:
+            defaultConfig['uuid_ports'] = acount['uuid_ports']
+        if acount['env_config']:
+            defaultConfig['env_config'] = acount['env_config']
          # 从环境变量中获取通道数 用户名 密码
          # 域名 app.js部署的根路径 如：/home/XXX[用户名]/domains/XXX[域名]/app/serv00-ws/
          #服务器编号 如 https://panel6.serv00.com/ 中的6
-        self.PANNELNUM = userInfo["pannelnum"]
+        self.PANNELNUM = acount["pannelnum"]
         self.USERNAME = acount["username"]
+        print(self.USERNAME +" run.................")
         #密码
         self.PASSWORD = acount["password"]
         # 根路径 默认以app命名
-        self.BASEPATH = userInfo["basepath"]
+        self.BASEPATH = acount["basepath"]
         #域名
-        self.DOMAIN = userInfo["domain"]
-        envConfig = userInfo["env_config"]
+        self.DOMAIN = acount["domain"]
+        envConfig = defaultConfig["env_config"]
         #是否重置运行环境
         self.RESET = envConfig['reset']
         #是否执行npm install命令 比较耗时建议不开启 手动执行
@@ -40,20 +49,24 @@ class AutoServ(object):
         # 部署节点个数
         self.NODE_NUM = envConfig['node_num']
         self.SEND_TG = envConfig['send_tg']
+        if tgConfig['send_tg']:
+            self.SEND_TG = tgConfig['send_tg']
         # 程序简单路径 默认从app文件后的路径 如'/serv00-vless/app'
         #self.APP_PATH = os.getenv('app_path')
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
         self.CODE_SOURCE_URL = envConfig['code_source_url']
         #tgConfig = userInfo['tg_config']
-        self.TG_BOT_TOKEN = acount['tg_bot_token']
-        self.TG_CHAT_ID = acount['tg_chat_id']
+        if tgConfig:
+            self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
+            self.TG_CHAT_ID = tgConfig['tg_chat_id']
+            self.SEND_TG = tgConfig['send_tg']
         self.proxy = ''
         """
         proxies = envConfig['proxies']
         if proxies:
             self.PROXIES = proxies[random.randint(0,len(proxies)-1)]
         """
-        self.configInfo = userInfo['uuid_ports']
+        self.configInfo = defaultConfig['uuid_ports']
 
         #self.PANNELNUM = 6
         if not self.BASEPATH:
@@ -63,7 +76,8 @@ class AutoServ(object):
         self.APP_PATH = '/'+self.PIDPATH+'/'+self.NODEJS_NAME
         self.FULLPATH = self.BASEPATH+self.APP_PATH
         #self.SEND_TG = 0
-        self.loop = asyncio.get_event_loop()
+        #self.loop = asyncio.get_event_loop()
+
         self.KILL_PID_PATH = envConfig['kill_pid_path']
 
 
@@ -93,7 +107,7 @@ class AutoServ(object):
         logininfo = {}
         logininfo['username'] = self.USERNAME
         logininfo['password'] = self.PASSWORD
-        self.portUidInfos = userInfo['uuid_ports']
+        self.portUidInfos = defaultConfig['uuid_ports']
         self.serv = Serv00(self.PANNELNUM, logininfo)
 
         self.uuidPorts = {}
@@ -118,6 +132,7 @@ class AutoServ(object):
             password=self.PASSWORD
 
         )
+
         return ssh
 
     # 自动执行 启动节点
@@ -160,11 +175,16 @@ class AutoServ(object):
         ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
         #异步发送节点链接到tg
         if self.SEND_TG:
-            tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
-            self.loop.run_until_complete(asyncio.wait(tasklist))
-        runningPorts = []
-    async def sendTgMsgLog(self,msg):
+            self.sendTgMsgSync(msg)
+            #tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
+
+    def sendTgMsgSync(self,msg):
         self.logger.info("send tg msg start..."+msg)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # 使用executor提交任务
+            executor.submit(self.sendTelegramMessage,msg)
+            pass
+
     def main(self):
         try:
 
@@ -306,7 +326,7 @@ class AutoServ(object):
                     self.executeCmd(ssh,pidcmd,3)
                     self.logger.info("kill pid::"+pid)
     # 发送节点到tg
-    async def sendTelegramMessage(self,message):
+    def sendTelegramMessage(self,message):
         url = f"https://api.telegram.org/bot{self.TG_BOT_TOKEN}/sendMessage"
         payload = {
             'chat_id': self.TG_CHAT_ID,
@@ -331,16 +351,13 @@ class AutoServ(object):
                 self.logger.info(f"发送消息到Telegram失败: {response.text}")
         except Exception as e:
             print(f"发送消息到Telegram时出错: {e}")
-    async def sendTelegramTest(self,msg):
-        #asyncio.sleep(10)
-        for i in range(100000):
-            self.logger.info(msg)
+
     # 只重启 不重新部署环境
     def restart(self):
         try:
             self.killPid(self.ssh)
             ports = self.serv.getloginPorts();
-            self.getNodejsFile(ssh)
+            self.getNodejsFile(self.ssh)
             if ports and len(ports) > 0:
                 for index,port in enumerate(ports):
 
@@ -352,8 +369,9 @@ class AutoServ(object):
                     #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
                     self.ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
                     if self.SEND_TG:
-                        tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
-                        self.loop.run_until_complete(asyncio.wait(tasklist))
+                        #tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
+                        #self.loop.run_until_complete(asyncio.wait(tasklist))
+                        self.sendTgMsgSync(msg)
         except Exception as e:
             print(f"restart error: {e}")
             self.logger.error("restart error")
@@ -398,7 +416,7 @@ class AutoServ(object):
                         res = stdout.read().decode()
                         pids = res.split('\r\n')
                         if pids and len(pids) > 0 and pids[0]:
-                            self.logger.info(str(pids[0]) +" is running")
+                            self.logger.info(self.USERNAME+"::"+str(pids[0]) +" is running")
                             continue
                         templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                         #ouuid = outoServ02.portUidInfos[index]['uuid']
@@ -409,63 +427,129 @@ class AutoServ(object):
                         self.ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
 
                 time.sleep(waitTime)
+                self.logger.info(self.USERNAME+" nodes keepalive")
             except Exception as e:
                 print(f"keepAlive error: {e}")
                 self.logger.error("keepAlive error")
-
-
-if __name__ == "__main__":
-    accountstr = os.getenv('ACCOUNT')
-    userinfostr = os.getenv('USER_INFO')
-    args = sys.argv
-    with open('user_info.json', 'r') as f:
-        userInfo = json.load(f)
-    with open('account.json', 'r') as f:
-        account = json.load(f)
-    print(userInfo)
-    #args = ['python','keepalive',60]
-    cmd = userInfo['cmd']
-    args = cmd.split()
-    outoServ = AutoServ(userInfo,account)
-    ssh = outoServ.ssh
-    logger = outoServ.logger;
-    logger.info("cmd::"+cmd)
-    if args and len(args) ==2:
-        cmd = args[1]
-        logger.info(cmd)
-        if cmd == 'reset':
-            outoServ.main()
-        elif cmd == 'restart':
-            outoServ.restart()
-        elif cmd ==  'keepalive':
-            outoServ.alive(60)
-        else:
-            logger.error("请输入如下命令：reset、restart、keepalive")
-            ssh.close()
-
-    elif args and len(args) ==3:
-        cmd2 = args[2]
-        cmd1 = args[1]
-        try:
-            waitTime = int(cmd2)
-            if cmd1 == 'reset':
-                outoServ.alive = 1
+    @staticmethod
+    def runAcount(defaultConfig,tgConfig,account,cmd):
+        outoServ = AutoServ(defaultConfig,account,tgConfig)
+        ssh = outoServ.ssh
+        if not cmd:# 如果github工作流使用命令 优先级最高
+            cmd = account['cmd']
+        args = cmd.split()
+        logger = outoServ.logger;
+        logger.info("cmd::"+cmd)
+        if args and len(args) ==2:
+            cmd = args[1]
+            logger.info(cmd)
+            if cmd == 'reset':
                 outoServ.main()
-                outoServ.keepAlive(waitTime)
-            elif cmd1=='restart':
-                outoServ.alive = 1
+            elif cmd == 'restart':
                 outoServ.restart()
-                outoServ.keepAlive(waitTime)
-            elif cmd1=='keepalive':
-                outoServ.keepAlive(waitTime)
+            elif cmd ==  'keepalive':
+                outoServ.alive(60)
             else:
-                logger.error("参数必须为 reset start keepalive  +正整数")
+                logger.error("请输入如下命令：reset、restart、keepalive")
                 ssh.close()
 
-        except Exception as e:
+        elif args and len(args) ==3:
+            cmd2 = args[2]
+            cmd1 = args[1]
+            try:
+                waitTime = int(cmd2)
+                if cmd1 == 'reset':
+                    outoServ.alive = 1
+                    outoServ.main()
+                    outoServ.keepAlive(waitTime)
+                elif cmd1=='restart':
+                    outoServ.alive = 1
+                    outoServ.restart()
+                    outoServ.keepAlive(waitTime)
+                elif cmd1=='keepalive':
+                    outoServ.keepAlive(waitTime)
+                else:
+                    logger.error("参数必须为 reset start keepalive  +正整数")
+                    ssh.close()
+
+            except Exception as e:
                 print(e)
                 logger.error(e)
                 ssh.close()
+
+
+
+if __name__ == "__main__":
+    cmd = os.getenv("cmd")
+    with open('default_config.json', 'r') as f:
+        defaultConfig = json.load(f)
+    with open('user_info.json', 'r') as f:
+        accounts = json.load(f)
+    try:
+        with open('env_config.json', 'r') as f:
+            envConfig = json.load(f)
+            defaultConfig = envConfig
+    except Exception as e:
+        print("使用默认环境配置")
+    #args = ['python','keepalive',60]
+    # 如果命令
+    args = sys.argv
+    myAccounts = accounts['accounts']
+    tgConfig = accounts['tg_config']
+    #runservloop = asyncio.get_event_loop()
+    #asyncio.run(runMain())
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        # 使用executor提交任务
+        if myAccounts and len(myAccounts) > 0:
+            for account in myAccounts:
+                executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
+                pass
+
+    if myAccounts and len(myAccounts) == 0:
+        for account in myAccounts:
+            outoServ = AutoServ(defaultConfig,account,tgConfig)
+            ssh = outoServ.ssh
+            if not cmd:# 如果github工作流使用命令 优先级最高
+                cmd = account['cmd']
+            args = cmd.split()
+            logger = outoServ.logger;
+            logger.info("cmd::"+cmd)
+            if args and len(args) ==2:
+                cmd = args[1]
+                logger.info(cmd)
+                if cmd == 'reset':
+                    outoServ.main()
+                elif cmd == 'restart':
+                    outoServ.restart()
+                elif cmd ==  'keepalive':
+                    outoServ.alive(60)
+                else:
+                    logger.error("请输入如下命令：reset、restart、keepalive")
+                    ssh.close()
+
+            elif args and len(args) ==3:
+                cmd2 = args[2]
+                cmd1 = args[1]
+                try:
+                    waitTime = int(cmd2)
+                    if cmd1 == 'reset':
+                        outoServ.alive = 1
+                        outoServ.main()
+                        outoServ.keepAlive(waitTime)
+                    elif cmd1=='restart':
+                        outoServ.alive = 1
+                        outoServ.restart()
+                        outoServ.keepAlive(waitTime)
+                    elif cmd1=='keepalive':
+                        outoServ.keepAlive(waitTime)
+                    else:
+                        logger.error("参数必须为 reset start keepalive  +正整数")
+                        ssh.close()
+
+                except Exception as e:
+                        print(e)
+                        logger.error(e)
+                        ssh.close()
 
 
 

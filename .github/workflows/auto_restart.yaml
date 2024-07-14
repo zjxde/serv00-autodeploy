@@ -1,12 +1,14 @@
-name: auto deploy
+name: auto restart
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */5 * * *"  # 每5小时运行一次，可以根据需求调整时间
   push:
     branches:
       - main
-
 jobs:
-  auto_deploy:
+  auto_restart:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,4 +41,4 @@ jobs:
           ENV_CONFIG: ${{ secrets.ENV_CONFIG }}
 
         run: |
-          python login_auto_deploy.py
+          python login_auto_deploy.py ${{ secrets.cmd }}
