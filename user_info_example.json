@@ -2,10 +2,11 @@
   "tg_config": {
     "tg_bot_token": "【tg token】",
     "tg_chat_id": "【tg chat id】",
-    "send_tg": 0
+    "send_tg": 0,
+    "node_num": 1,
+    "usepm2": 1
   },
   "accounts": [
-
     {
       "username": "【用户名】",
       "password": "【密码】",
