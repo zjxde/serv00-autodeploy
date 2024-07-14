@@ -48,7 +48,7 @@ class AutoServ(object):
         #是否执行npm install命令 比较耗时建议不开启 手动执行
         self.OUTO_NPM_INSTALL = envConfig['outo_npm_install']
         # 部署节点个数
-        self.NODE_NUM = envConfig['node_num']
+
         self.SEND_TG = envConfig['send_tg']
         if tgConfig['send_tg']:
             self.SEND_TG = tgConfig['send_tg']
@@ -62,6 +62,7 @@ class AutoServ(object):
             self.TG_CHAT_ID = tgConfig['tg_chat_id']
             self.SEND_TG = tgConfig['send_tg']
             self.USE_PM2 = tgConfig['usepm2']
+            self.NODE_NUM = tgConfig['node_num']
         self.proxy = ''
         """
         proxies = envConfig['proxies']
@@ -248,8 +249,7 @@ class AutoServ(object):
                 self.getNodejsFile(ssh)
     #自动安装部署node等运行环境
     def resetEnv(self,ssh,outoNpmInstall):
-
-
+        pm2path =  '/home/'+self.USERNAME+'/.npm-global/bin/pm2'
         try:
             pidfullpath = self.BASEPATH+"/"+self.PIDPATH
             #此方法耗时较长 取决你的网络环境，若等待时间超时，请手动r执行npm install
@@ -269,12 +269,17 @@ class AutoServ(object):
                 res = stdout.read().decode()
                 files = res.split('\r\n')
                 delayTime = 5
+                if self.USE_PM2:
+                    if self.USE_PM2:
+                        lsPm2 = pm2path+' list'
+                        files = self.executeNewCmd(ssh, lsPm2,120)[0]
+                        self.logger.info(files)
+                        if files and 'Instance' not in files:
+                            pm2="bash <(curl -s https://raw.githubusercontent.com/k0baya/alist_repl/main/serv00/install-pm2.sh)"
+                            files = self.executeNewCmd(ssh, pm2path+pm2,120)[0]
+                            self.logger.info(files)
+
                 while (files and 'No such' in files[0]) or timeout >=0:
-                    #self.ssh.executeCmd(ssh, wget,5)
-                    #stdin, stdout, stderr = self.ssh.exec_command(wget,get_pty=True)
-                    #res = stdout.read().decode()
-                    #wgetres = res.split('\r\n')
-                    #self.logger.info( wget+"::"+wgetres[0])
                     files = self.executeNewCmd(ssh, wget,120)[0]
                     self.logger.info(files)
                     timeout = timeout-delayTime
