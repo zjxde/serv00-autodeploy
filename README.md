@@ -44,7 +44,7 @@
 
   }
 }
-5、添加以下 secrets 名称：ACCOUNT(包含账号密码信息信息的 JSON 数据)。【必须配置】，例如：
+5、添加以下 secrets 名称：USER_INFO(包含账号密码信息信息的 JSON 数据)。【必须配置】，例如：
 {
   "tg_config": {
     "tg_bot_token": "【申请tg机器人的token】",
