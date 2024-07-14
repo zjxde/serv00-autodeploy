@@ -328,10 +328,13 @@ class AutoServ(object):
         #ssh = getSshClient()
 
         if self.USE_PM2:
-            pidcmd = self.pm2path + ' stop all'
-            self.executeNewCmd(ssh,pidcmd,3)
+            pidcmd = self.pm2path + ' delete all'
+            self.executeNewCmd(ssh,pidcmd,5)
             self.logger.info("pm2 kill all pid")
         else:
+            pidcmd = self.pm2path + ' delete all'
+            self.executeNewCmd(ssh,pidcmd,5)
+            self.logger.info("pm2 kill all pid")
             cmd = 'pgrep -f '+self.KILL_PID_PATH
             stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
             res = stdout.read().decode()
@@ -340,7 +343,7 @@ class AutoServ(object):
                 for pid in pids:
                     if pid :
                         pidcmd = 'kill -9 '+pid
-                        self.executeNewCmd(ssh,pidcmd,3)
+                        self.executeNewCmd(ssh,pidcmd,5)
                         self.logger.info("kill pid::"+pid)
     # 发送节点到tg
     def sendTelegramMessage(self,message):
