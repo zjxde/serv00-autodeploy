@@ -23,9 +23,6 @@ from sshs import SSHClientManagement
 class AutoServ(object):
 
     def __init__(self, defaultConfig, acount,tgConfig):
-        logger.info(defaultConfig)
-        logger.info(acount)
-        logger.info(tgConfig)
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
         if acount['uuid_ports']:
             defaultConfig['uuid_ports'] = acount['uuid_ports']
@@ -238,8 +235,9 @@ class AutoServ(object):
                     break
 
         except IOError:
+            self.logger.error(e)
             raise Exception("读写文件失败，请检查变量是否配置准确")
-            self.logger.error("Error: 没有找到文件或读取文件失败"+e)
+
         finally:
             if not self.alive:
                 if ftp :
