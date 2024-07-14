@@ -6,7 +6,7 @@ on:
     - cron: "0 */5 * * *"  # 每5小时运行一次，可以根据需求调整时间
   push:
     branches:
-      - main
+      - release
 jobs:
   auto_restart:
     runs-on: ubuntu-latest
