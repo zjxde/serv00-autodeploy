@@ -23,7 +23,9 @@ from sshs import SSHClientManagement
 class AutoServ(object):
 
     def __init__(self, defaultConfig, acount,tgConfig):
-
+        logger.info(defaultConfig)
+        logger.info(acount)
+        logger.info(tgConfig)
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
         if acount['uuid_ports']:
             defaultConfig['uuid_ports'] = acount['uuid_ports']
@@ -119,7 +121,7 @@ class AutoServ(object):
             self.getNodejsFile(self.ssh)
 
         self.runningPorts = []
-
+        self.logger.info(self.USERNAME +" server init finish.................")
         #ftp = None
     # 获取远程ssh客户端链接
     def getSshClient(self):
