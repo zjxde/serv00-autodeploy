@@ -270,14 +270,13 @@ class AutoServ(object):
                 files = res.split('\r\n')
                 delayTime = 5
                 if self.USE_PM2:
-                    if self.USE_PM2:
-                        lsPm2 = pm2path+' list'
-                        files = self.executeNewCmd(ssh, lsPm2,120)[0]
+                    lsPm2 = pm2path+' list'
+                    files = self.executeNewCmd(ssh, lsPm2,120)[0]
+                    self.logger.info(files)
+                    if files and 'Instance' not in files:
+                        pm2="bash <(curl -s https://raw.githubusercontent.com/k0baya/alist_repl/main/serv00/install-pm2.sh)"
+                        files = self.executeNewCmd(ssh, pm2path+pm2,120)[0]
                         self.logger.info(files)
-                        if files and 'Instance' not in files:
-                            pm2="bash <(curl -s https://raw.githubusercontent.com/k0baya/alist_repl/main/serv00/install-pm2.sh)"
-                            files = self.executeNewCmd(ssh, pm2path+pm2,120)[0]
-                            self.logger.info(files)
 
                 while (files and 'No such' in files[0]) or timeout >=0:
                     files = self.executeNewCmd(ssh, wget,120)[0]
