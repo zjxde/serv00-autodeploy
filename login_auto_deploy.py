@@ -537,7 +537,6 @@ if __name__ == "__main__":
         if myAccounts and len(myAccounts) > 0:
             for account in myAccounts:
                 executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
-                break
                 pass
 
 
