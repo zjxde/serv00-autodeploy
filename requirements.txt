@@ -1,4 +1,5 @@
 aiohttp==3.9.5
+APScheduler==3.10.4
 lxml==5.2.2
 paramiko==3.4.0
 Requests==2.32.3

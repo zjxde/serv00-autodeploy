@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import asyncio
+import concurrent
 import random
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -15,6 +16,7 @@ import requests
 from paramiko import SSHClient
 from serv import Serv00
 from logger import Mylogger
+from apscheduler.schedulers.blocking import BlockingScheduler
 from sshs import SSHClientManagement
 
 """
@@ -22,6 +24,7 @@ from sshs import SSHClientManagement
 """
 class AutoServ(object):
 
+    sched = BlockingScheduler()
     def __init__(self, defaultConfig,account,tgConfig):
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
         if 'uuid_ports' in account and account['uuid_ports']:
@@ -431,40 +434,42 @@ class AutoServ(object):
 
 
     #保活
-    def keepAlive(self,waitTime):
+    def keepAlive(self):
+        self.ssh = self.getSshClient()
         self.getNodejsFile(self.ssh)
-        while 1:
-            try:
-                ports = None
-                if self.runningPorts:
-                    ports = self.runningPorts
-                else:
-                    ports = self.serv.getloginPorts()
-                ssh = self.ssh
-                if ports and len(ports) > 0:
-                    if len(ports) >=3:
-                        self.runningPorts = ports
-                    for index,port in enumerate(ports):
-                        ouuid = self.uuidPorts[str(port)]
-                        cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
-                        stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
-                        res = stdout.read().decode()
-                        pids = res.split('\r\n')
-                        if pids and len(pids) > 0 and pids[0]:
-                            self.logger.info(self.DOMAIN+"::"+self.USERNAME+"::"+str(pids[0]) +" is running")
-                            continue
-                        templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
-                        #ouuid = outoServ02.portUidInfos[index]['uuid']
-                        ouuid = self.uuidPorts[port]
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
-                        self.logger.info("url is::"+msg)
-                        self.startCmd(templateName,port,ssh)
+        try:
+            ports = None
+            if self.runningPorts:
+                ports = self.runningPorts
+            else:
+                ports = self.serv.getloginPorts()
+            ssh = self.ssh
+            if ports and len(ports) > 0:
+                if len(ports) >=3:
+                    self.runningPorts = ports
+                for index,port in enumerate(ports):
+                    ouuid = self.uuidPorts[str(port)]
+                    cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
+                    stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
+                    res = stdout.read().decode()
+                    pids = res.split('\r\n')
+                    if pids and len(pids) > 0 and pids[0]:
+                        self.logger.info(self.DOMAIN+"::"+self.USERNAME+"::"+str(pids[0]) +" is running")
+                        continue
+                    templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
+                    #ouuid = outoServ02.portUidInfos[index]['uuid']
+                    ouuid = self.uuidPorts[port]
+                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                    self.logger.info("url is::"+msg)
+                    self.startCmd(templateName,port,ssh)
 
-                time.sleep(waitTime)
-                self.logger.info(self.DOMAIN+"::"+self.USERNAME+" nodes keepalive")
-            except Exception as e:
-                self.logger.error(f"keepAlive error: {e}")
-                self.logger.error(self.DOMAIN+"::"+self.USERNAME+" keepAlive error")
+            #time.sleep(waitTime)
+            self.logger.info(self.DOMAIN+"::"+self.USERNAME+" nodes keepalive")
+        except Exception as e:
+
+            self.logger.error(f"keepAlive error: {e}")
+            self.logger.error(self.DOMAIN+"::"+self.USERNAME+" keepAlive error")
+
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
         outoServ = AutoServ(defaultConfig,account,tgConfig)
@@ -482,7 +487,9 @@ class AutoServ(object):
             elif cmd == 'restart':
                 outoServ.restart()
             elif cmd ==  'keepalive':
-                outoServ.alive(60)
+                outoServ.alive = 1
+                AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=10)
+                AutoServ.sched.start()
             else:
                 logger.error("请输入如下命令：reset、restart、keepalive")
                 ssh.close()
@@ -499,19 +506,22 @@ class AutoServ(object):
                 elif cmd1=='restart':
                     outoServ.alive = 1
                     outoServ.restart()
+                    AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                    AutoServ.sched.start()
                     outoServ.keepAlive(waitTime)
-                elif cmd1=='keepalive':
-                    outoServ.keepAlive(waitTime)
+                elif cmd ==  'keepalive':
+                    outoServ.alive = 1
+                    logger.info("输入命令为：keepalive")
                 else:
-                    logger.error("参数必须为 reset start keepalive  +正整数")
+                    logger.error("请输入如下命令：reset、restart、keepalive")
                     ssh.close()
-
+                AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                AutoServ.sched.start()
             except Exception as e:
                 print(e)
                 logger.error(e)
                 ssh.close()
-
-
+        return outoServ
 
 if __name__ == "__main__":
     cmd = os.getenv("CMD")
@@ -535,9 +545,21 @@ if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=5) as executor:
         # 使用executor提交任务
         if myAccounts and len(myAccounts) > 0:
+            future_results = []
             for account in myAccounts:
-                executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
+                res = executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
+                future_results.append(res)
+                #break
                 pass
+            """
+            results = []
+            for future in concurrent.futures.as_completed(future_results):
+                result = future.result()
+            results.append(result)
+            print(f"Task result: {result}")
+            
+            """
+
 
 
 
