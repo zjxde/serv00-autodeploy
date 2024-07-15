@@ -3,7 +3,7 @@ name: auto restart
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */5 * * *"  # 每5小时运行一次，可以根据需求调整时间
+    - cron: "0 */6 * * *"  # 每5小时运行一次，可以根据需求调整时间
   push:
     branches:
       - release

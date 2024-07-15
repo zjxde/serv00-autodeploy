@@ -50,20 +50,21 @@
   "tg_config": {
     "tg_bot_token": "【申请tg机器人的token】",
     "tg_chat_id": "【Chat ID】",
-    "send_tg": 0 ,【是否需要发送节点信息到telegram】
+    "send_tg": 0 ,【是否需要发送节点信息到telegram 1:开启 0：不开启】
     "node_num": 3,【开启节点个数，由于节点serv00端口限制，最多可设3个】
-    "usepm2": 1 【是否开启pm2】
+    "usepm2": 1 【是否开启pm2 1:开启 0：不开启】
   },
   "accounts": [    【ACCOUNT此项配置优先级比ENV_CONFIG要高,支持多个账号批量部署】
     {
-      "username": "【用户名】",
-      "password": "【密码】",
-      "domain": "junx123.cloudns.ch",【你申请的域名】
-      "pannelnum": 6,【你申请机器号】
+      "username": "【必填用户名】",
+      "password": "【必填密码】",
+      "domain": "junx123.cloudns.ch",【必填,你申请的域名】
+      "pannelnum": 6,【必填,你申请机器号】
+      "server_type": 2,【必填,1:serv00,2:ct8】
       "cmd":"python restart 60",【必填 reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间】
-      "uuid_ports":[],【可修改自己的uuid值，也可以不修改,port值默认即可】
-      "env_config": {},
-      "basepath": ""【默认即可：/home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/】
+      "uuid_ports":[],【非必须配置 可修改自己的uuid值,port值默认即可】
+      "env_config": {},【非必须配置】
+      "basepath": ""【非必须配置：默认/home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/】
     },
     {
       "username": "xxx",
@@ -71,10 +72,7 @@
       "domain": "xxx",
       "pannelnum": 6,
       "cmd":"python restart 60",
-      "uuid_ports":[],
-      "env_config": {},
-      "basepath": ""
-
+      "server_type": 2, 
     }
   ]
 }
@@ -92,7 +90,7 @@
 3、工作流文件有 
     auto_deploy.yaml:一开始部署使用此任务
     auto_restart.yaml : 可自定义命令重启服务器 注使用该使用需要手动配置 secrets 名称为 CMD，值为 py restart 60【推荐】 ，后面
-    的数值可按自己需求自行修改( 参数说明：reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间)
+    的数值可按自己需求自行修改( 参数说明：reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间，单位为秒)
 ```
 
 ## (四).注意事项

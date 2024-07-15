@@ -22,24 +22,36 @@ from sshs import SSHClientManagement
 """
 class AutoServ(object):
 
-    def __init__(self, defaultConfig, acount,tgConfig):
+    def __init__(self, defaultConfig,account,tgConfig):
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
-        if acount['uuid_ports']:
-            defaultConfig['uuid_ports'] = acount['uuid_ports']
-        if acount['env_config']:
-            defaultConfig['env_config'] = acount['env_config']
+        if 'uuid_ports' in account and account['uuid_ports']:
+            defaultConfig['uuid_ports'] = account['uuid_ports']
+
+        if 'env_config' in account and account['env_config']:
+            defaultConfig['env_config'] = account['env_config']
          # 从环境变量中获取通道数 用户名 密码
          # 域名 app.js部署的根路径 如：/home/XXX[用户名]/domains/XXX[域名]/app/serv00-ws/
          #服务器编号 如 https://panel6.serv00.com/ 中的6
-        self.PANNELNUM = acount["pannelnum"]
-        self.USERNAME = acount["username"]
+        self.PANNELNUM = account["pannelnum"]
+        # server_type:1 serv00 2 ct8
+        if 'server_type' in account and account['server_type'] == 2:
+            self.HOSTNAME = 'panel.ct8.pl'
+        else:
+            self.HOSTNAME = 'panel' + str(self.PANNELNUM) + '.serv00.com'
+        #如果ip配置存在 优先显示
+        #域名
+        self.DOMAIN = account["domain"]
+        if 'ip' in account:
+            self.nodeHost = account['ip']
+        else:
+            self.nodeHost = self.DOMAIN
+        self.USERNAME = account["username"]
         print(self.USERNAME +" run.................")
         #密码
-        self.PASSWORD = acount["password"]
+        self.PASSWORD = account["password"]
         # 根路径 默认以app命名
-        self.BASEPATH = acount["basepath"]
-        #域名
-        self.DOMAIN = acount["domain"]
+
+
         envConfig = defaultConfig["env_config"]
         #是否重置运行环境
         self.RESET = envConfig['reset']
@@ -71,7 +83,10 @@ class AutoServ(object):
         self.configInfo = defaultConfig['uuid_ports']
 
         #self.PANNELNUM = 6
-        if not self.BASEPATH:
+
+        if 'basepath' in account:
+            self.BASEPATH = account["basepath"]
+        else:
             self.BASEPATH = "/home/"+self.USERNAME+"/domains/"+self.DOMAIN+"/app2"
         self.NODEJS_NAME = envConfig['nodejs_name']
         self.PIDPATH=self.CODE_SOURCE_URL.split('/')[-1]
@@ -110,7 +125,7 @@ class AutoServ(object):
         logininfo['username'] = self.USERNAME
         logininfo['password'] = self.PASSWORD
         self.portUidInfos = defaultConfig['uuid_ports']
-        self.serv = Serv00(self.PANNELNUM, logininfo)
+        self.serv = Serv00(self.PANNELNUM, logininfo,self.HOSTNAME)
 
         self.uuidPorts = {}
         self.alive = 0
@@ -128,7 +143,7 @@ class AutoServ(object):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         # 输入服务器地址，账户名，密码
         ssh.connect(
-            hostname='panel' + str(self.PANNELNUM) + '.serv00.com',
+            hostname=self.HOSTNAME,
             port=22,
             username=self.USERNAME,
             password=self.PASSWORD
@@ -171,7 +186,7 @@ class AutoServ(object):
         file = sftp_client.file(templateName, "a", -1)
         file.write(newcontent)
         file.flush()
-        msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
         self.logger.info("url is::"+msg)
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
@@ -383,7 +398,7 @@ class AutoServ(object):
 
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
-                    msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     self.logger.info("url is::"+msg)
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
@@ -394,7 +409,7 @@ class AutoServ(object):
                         self.sendTgMsgSync(msg)
         except Exception as e:
             print(f"restart error: {e}")
-            self.logger.error("restart error")
+            self.logger.error(self.DOMAIN+" restart error")
         finally:
             if not self.alive:
                 if self.ssh is not None:
@@ -436,20 +451,20 @@ class AutoServ(object):
                         res = stdout.read().decode()
                         pids = res.split('\r\n')
                         if pids and len(pids) > 0 and pids[0]:
-                            self.logger.info(self.USERNAME+"::"+str(pids[0]) +" is running")
+                            self.logger.info(self.DOMAIN+"::"+self.USERNAME+"::"+str(pids[0]) +" is running")
                             continue
                         templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                         #ouuid = outoServ02.portUidInfos[index]['uuid']
                         ouuid = self.uuidPorts[port]
-                        msg = "vless://"+ouuid+"@"+self.DOMAIN+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                         self.logger.info("url is::"+msg)
                         self.startCmd(templateName,port,ssh)
 
                 time.sleep(waitTime)
-                self.logger.info(self.USERNAME+" nodes keepalive")
+                self.logger.info(self.DOMAIN+"::"+self.USERNAME+" nodes keepalive")
             except Exception as e:
-                print(f"keepAlive error: {e}")
-                self.logger.error(self.USERNAME+" keepAlive error")
+                self.logger.error(f"keepAlive error: {e}")
+                self.logger.error(self.DOMAIN+"::"+self.USERNAME+" keepAlive error")
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
         outoServ = AutoServ(defaultConfig,account,tgConfig)
@@ -522,53 +537,8 @@ if __name__ == "__main__":
         if myAccounts and len(myAccounts) > 0:
             for account in myAccounts:
                 executor.submit(AutoServ.runAcount,defaultConfig,tgConfig,account,cmd)
+                break
                 pass
-    #过时
-    if myAccounts and len(myAccounts) == 0:
-        for account in myAccounts:
-            outoServ = AutoServ(defaultConfig,account,tgConfig)
-            ssh = outoServ.ssh
-            if not cmd:# 如果github工作流使用命令 优先级最高
-                cmd = account['cmd']
-            args = cmd.split()
-            logger = outoServ.logger;
-            logger.info("cmd::"+cmd)
-            if args and len(args) ==2:
-                cmd = args[1]
-                logger.info(cmd)
-                if cmd == 'reset':
-                    outoServ.main()
-                elif cmd == 'restart':
-                    outoServ.restart()
-                elif cmd ==  'keepalive':
-                    outoServ.alive(60)
-                else:
-                    logger.error("请输入如下命令：reset、restart、keepalive")
-                    ssh.close()
-
-            elif args and len(args) ==3:
-                cmd2 = args[2]
-                cmd1 = args[1]
-                try:
-                    waitTime = int(cmd2)
-                    if cmd1 == 'reset':
-                        outoServ.alive = 1
-                        outoServ.main()
-                        outoServ.keepAlive(waitTime)
-                    elif cmd1=='restart':
-                        outoServ.alive = 1
-                        outoServ.restart()
-                        outoServ.keepAlive(waitTime)
-                    elif cmd1=='keepalive':
-                        outoServ.keepAlive(waitTime)
-                    else:
-                        logger.error("参数必须为 reset start keepalive  +正整数")
-                        ssh.close()
-
-                except Exception as e:
-                        print(e)
-                        logger.error(e)
-                        ssh.close()
 
 
 

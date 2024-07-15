@@ -3,8 +3,9 @@ import requests
 from lxml import etree
 class Serv00(object):
 
-    def __init__(self,pannelnum,logininfo):
-        basepath = 'https://panel'+str(pannelnum)+'.serv00.com/'
+    def __init__(self,pannelnum,logininfo,hostname):
+        #basepath = 'https://panel'+str(pannelnum)+'.serv00.com/'
+        basepath = 'https://'+hostname+'/'
         self.loginReferer = basepath +'login/'
         self.portlistReferer = basepath
         self.delPortReferer = basepath+'port/'
