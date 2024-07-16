@@ -12,21 +12,14 @@
       "password": "【密码】",
       "domain": "【域名】",
       "pannelnum": 6,
-      "cmd":"python restart 60",
-      "uuid_ports":[],
-      "env_config": {},
-      "basepath": ""
+      "cmd":"python restart 20"
     },
     {
       "username": "【用户名】",
       "password": "【密码】",
       "domain": "【域名】",
       "pannelnum": 6,
-      "cmd":"python restart 60",
-      "uuid_ports":[],
-      "env_config": {},
-      "basepath": ""
-
+      "cmd":"python restart 20"
     }
   ]
 }

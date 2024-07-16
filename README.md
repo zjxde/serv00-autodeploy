@@ -1,4 +1,4 @@
-# serv00自动化部署启动，保活，并且可发送消息到Telegram
+# Serv00与CT8自动化部署启动，保活，并且可发送节点消息到Telegram
 
 ## 利用github Action以及python脚本实现
 
@@ -11,6 +11,8 @@
 ```
 1、访问原始仓库页面： 打开你想要 fork 的 GitHub 仓库页面。
 2、Fork 仓库 点击页面右上角的 "Fork" 按钮，将仓库 fork 到你的 GitHub 账户下。
+3、若没有Serv00服务器 请参照(五)服务器Serv00免费申请教程,从教程【搭建vless节点】步骤开始就可使用本项目进行自动化部署：
+   包括自动申请随机端口、自动化配置服务器运行环境、自建节点启动，节点保活节点下线自动重启，支持node和PM2两种启动方式
 ```
 
 ## (二). 设置 GitHub Secrets
@@ -45,7 +47,7 @@
   }
 }
 5、【必须配置】打开项目 user_info_example.json 按照以下说明添加 找到Setting->Secrets->actions 添加secrets名称：USER_INFO(包含账号密码信息信息的 JSON 数据)。，例如：
-    注意:【】内容只是配置说明，配置时必须包括中括号都要删除
+    注意:【】内容只是配置说明，配置时必须包括中括号都要删除，示例配置结构是:{"tg_config":{相关自定义配置},"accounts":[{账号一},{账号二},{账号三},...]}，具体就参照下方
 {
   "tg_config": {
     "tg_bot_token": "【申请tg机器人的token】",
@@ -100,3 +102,12 @@
 2、更新和删除: 如果需要更新或删除 Secrets，可以通过仓库的 Secrets 页面进行管理。
 3、通过以上步骤，你就可以成功将代码 fork 到你的仓库下并运行了。如果需要进一步的帮助或有其他问题，请随时告知！
 ```
+
+## (五).相关教程
+
+```
+1、Serv00与ct8自动化批量保号 : [https://github.com/yixiu001/serv00-login](https://)
+2、服务器Serv00免费申请教程: [https://blog.yixiu.us.kg/posts/gratis/freevpsandvless/](https://)
+3、TG技术交流群：[https://t.me/yxjsjl](https://)
+```
+
