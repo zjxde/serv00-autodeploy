@@ -3,7 +3,7 @@ name: auto test
 on:
   push:
     branches:
-      - main
+      - release/test
     paths-ignore:
       - 'README.md'
       - 'user_info_example.json'
