@@ -39,6 +39,6 @@ jobs:
         env:
           USER_INFO: ${{ secrets.USER_INFO }}
           ENV_CONFIG: ${{ secrets.ENV_CONFIG }}
-
+          CMD: ${{ secrets.ENV_CMD }}
         run: |
-          python login_auto_deploy.py ${{ secrets.ENV_CMD }}
+          python login_auto_deploy.py
