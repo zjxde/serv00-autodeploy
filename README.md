@@ -26,7 +26,7 @@
 
 ### 配置 GitHub Secrets
 
-** 1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**
+**1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**
 
       注：此项可直接复制下面的内容配置即可 
 
