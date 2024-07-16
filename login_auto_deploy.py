@@ -49,7 +49,7 @@ class AutoServ(object):
         else:
             self.nodeHost = self.DOMAIN
         self.USERNAME = account["username"]
-        print(self.DOMAIN +"::"+self.USERNAME +" run.................")
+        self.logger.info(self.DOMAIN +"::"+self.USERNAME +" run.................")
         #密码
         self.PASSWORD = account["password"]
         # 根路径 默认以app命名
