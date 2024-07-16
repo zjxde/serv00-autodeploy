@@ -28,8 +28,7 @@
 
 **1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**
 
-      注：此项可直接复制下面的内容配置即可 
-
+      注：此项可直接复制下面的内容配置即可
 ```
 nodejs_name{
   "uuid_ports": [
@@ -49,6 +48,9 @@ nodejs_name{
 ```
 
 **2、Setting->Secrets->actions 添加secrets名称：USER_INFO**
+        
+     注：此项参数中括号只是配置说明，需要修改成你自己的
+        检验配置内容是否格式有效地址：https://www.bejson.com/explore/index_new/
 
 ```json
 {
