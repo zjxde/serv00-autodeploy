@@ -82,8 +82,13 @@
 }
 
 ```
+**3、Setting->Secrets->actions 添加secrets名称：ENV_CMD,值复制下面内容** 
 
-**3、ENV_CONFIG 配置项参数说明**
+```
+py restart 20
+```
+
+**4、ENV_CONFIG 配置项参数说明**
 
 |uuid|节点uuid值，可以不修改|
 |--|--|
@@ -94,7 +99,7 @@
 |kill_pid_path|默认即可|
 |nodejs_name|节点布置文件node.js的名称 默认即可|
 
-**3、USER_INFO 配置项参数说明**
+**5、USER_INFO 配置项参数说明**
 
 |tg_bot_token|申请tg机器人的token|
 |--|--|
