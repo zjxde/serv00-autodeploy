@@ -75,7 +75,7 @@
       "domain": "xxx",
       "pannelnum": 6,
       "cmd":"python restart 60",
-      "server_type": 2, 
+      "server_type": 2
     }
   ]
 }

@@ -2,8 +2,8 @@
   "tg_config": {
     "tg_bot_token": "【tg token】",
     "tg_chat_id": "【tg chat id】",
-    "send_tg": 0,
-    "node_num": 1,
+    "send_tg": 1,
+    "node_num": 2,
     "usepm2": 1
   },
   "accounts": [
@@ -12,14 +12,16 @@
       "password": "【密码】",
       "domain": "【域名】",
       "pannelnum": 6,
-      "cmd":"python restart 20"
+      "cmd":"python reset 20",
+      "server_type": 1
     },
     {
       "username": "【用户名】",
       "password": "【密码】",
       "domain": "【域名】",
       "pannelnum": 6,
-      "cmd":"python restart 20"
+      "cmd":"python reset 20",
+      "server_type": 1
     }
   ]
 }
