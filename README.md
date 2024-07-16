@@ -47,9 +47,9 @@
 ```
 
 **2、Setting->Secrets->actions 添加secrets名称：USER_INFO**
-    (注：此项参数中括号只是配置说明，需要修改成你自己的)
-        检验配置内容是否json格式有效地址：https://www.bejson.com/explore/index_new/
-        配置格式为json格式：{"tg_config"{你的配置},accounts:[{账号一配置},{账号二配置},......]}
+(注：此项参数中括号只是配置说明，需要修改成你自己的)
+检验配置内容是否json格式有效地址：https://www.bejson.com/explore/index_new/
+配置格式为json格式：{"tg_config"{你的配置},accounts:[{账号一配置},{账号二配置},......]}
 
 ```json
 {
