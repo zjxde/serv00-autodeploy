@@ -512,7 +512,7 @@ class AutoServ(object):
                     logger.error("请输入如下命令：reset、restart、keepalive")
                     ssh.close()
                 if outoServ.alive:
-                    logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+waitTime)
+                    logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
                     AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
                     AutoServ.sched.start()
             except Exception as e:
