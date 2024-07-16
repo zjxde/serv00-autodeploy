@@ -90,18 +90,19 @@ py restart 20
 
 **4、ENV_CONFIG 配置项参数说明**
 
-|uuid|节点uuid值，可以不修改|
+|参数名称|参数说明|
 |--|--|
 |port|节点端口号|
-|reset|是否需要重装节点 0：不重装 1：重装 |
+|reset|是否需要重装节点 0：不重装 1：重装|
 |outo_npm_install|是否自动安装 0：手动安装 1 : 自动安装 此项默认即可|
 |code_source_url|节点代码地址 默认即可|
 |kill_pid_path|默认即可|
 |nodejs_name|节点布置文件node.js的名称 默认即可|
+|uuid|节点uuid值，可以不修改|
 
-**5、USER_INFO 配置项参数说明**
+**3、USER_INFO 配置项参数说明**
 
-|tg_bot_token|申请tg机器人的token|
+|参数名称|参数说明|
 |--|--|
 |tg_chat_id|Chat ID|
 |send_tg|是否需要发送节点信息到telegram ,1:开启 0：不开启|
@@ -114,7 +115,7 @@ py restart 20
 |server_type|服务器类型 1: Serv00  2: CT8  ，默认为1|
 |cmd|reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟|
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
-|||
+|tg_bot_token|申请tg机器人的token|
 
 ## (四). 启动 GitHub Actions
 
