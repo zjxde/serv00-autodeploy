@@ -5,7 +5,7 @@
     {"uuid": "6adcae4e-16cc-443d-98c0-49f5c5dd46b9", "port": 0}
   ],
   "env_config": {
-    "reset": 0,
+    "reset": 1,
     "outo_npm_install": 1,
     "code_source_url": "git clone http://github.com/zjxde/serv00-ws",
     "kill_pid_path": "serv00",

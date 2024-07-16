@@ -73,6 +73,10 @@ class AutoServ(object):
             self.SEND_TG = tgConfig['send_tg']
             self.USE_PM2 = tgConfig['usepm2']
             self.NODE_NUM = tgConfig['node_num']
+            if 'timeout' in tgConfig:
+                self.TIMEOUT = tgConfig['timeout']
+            else:
+                self.TIMEOUT = 600
         self.proxy = ''
         """
         proxies = envConfig['proxies']
@@ -145,7 +149,8 @@ class AutoServ(object):
             hostname=self.HOSTNAME,
             port=22,
             username=self.USERNAME,
-            password=self.PASSWORD
+            password=self.PASSWORD,
+            timeout=self.TIMEOUT
 
         )
 
@@ -208,10 +213,13 @@ class AutoServ(object):
             ssh.exec_command('nohup node '+templateName+' > '+self.FULLPATH+'_'+str(port)+'.log 2>&1 &')
     def main(self):
         try:
+            try:
+                ssh = self.getSshClient()
+                ftp = ssh.open_sftp()
+                self.killPid(ssh)
+            except Exception as e:
+                self.logger.error("connect is timeout or error")
 
-            ssh = self.getSshClient()
-            ftp = ssh.open_sftp()
-            self.killPid(ssh)
             if self.RESET:
                 self.resetEnv(ssh,self.OUTO_NPM_INSTALL)
             # 从serv00服务器删除原有端口，自动获取端口
@@ -228,7 +236,7 @@ class AutoServ(object):
                     if len(uuidPorts) > 0 :
                         if port in uuidPorts:
                             uuidPorts.pop(port)
-            for i in range(0,self.NODE_NUM):
+            for i in range(0,min(self.NODE_NUM,3)):
                 serv.addport(None)
 
             ports = serv.getports();
@@ -248,9 +256,9 @@ class AutoServ(object):
                 if i>=self.NODE_NUM:
                     break
 
-        except IOError:
+        except Exception as e:
             self.logger.error(e)
-            raise Exception("读写文件失败，请检查变量是否配置准确")
+            raise Exception("main方法异常，请检查变量是否配置准确")
 
         finally:
             if not self.alive:
@@ -315,7 +323,8 @@ class AutoServ(object):
 
 
         except Exception as e:
-            self.logger.error(":::env init error::" +e)
+            self.logger.error(e)
+            self.logger.error(":::env init error")
     #远程执行相关命令
     def executeCmd(self,ssh, cmd,waitTime):
         stdin, stdout, stderr = ssh.exec_command(cmd,timeout=waitTime,get_pty=True)
@@ -504,7 +513,7 @@ class AutoServ(object):
                 if cmd1 == 'reset':
                     outoServ.alive = 1
                     outoServ.main()
-                    outoServ.keepAlive(waitTime)
+                    #outoServ.keepAlive()
                 elif cmd1=='restart':
                     outoServ.alive = 1
                     outoServ.restart()
