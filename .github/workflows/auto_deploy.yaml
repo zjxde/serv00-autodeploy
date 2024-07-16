@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths-ignore:
-      - README.md
-      - user_info_example.json
-      - default_config.json
+      - 'README.md'
+      - 'user_info_example.json'
+      - 'default_config.json'
 
 jobs:
   auto_deploy:
