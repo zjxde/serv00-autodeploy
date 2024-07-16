@@ -59,7 +59,7 @@ nodejs_name{
     "tg_chat_id": "【tg chat id】",
     "send_tg": 1,
     "node_num": 2,
-    "usepm2": 1
+    "usepm2": 0
   },
   "accounts": [
     {
