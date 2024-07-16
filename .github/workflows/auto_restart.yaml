@@ -41,4 +41,4 @@ jobs:
           ENV_CONFIG: ${{ secrets.ENV_CONFIG }}
 
         run: |
-          python login_auto_deploy.py ${{ secrets.CMD }}
+          python login_auto_deploy.py ${{ secrets.ENV_CMD }}

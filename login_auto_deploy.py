@@ -485,6 +485,7 @@ class AutoServ(object):
     def runAcount(defaultConfig,tgConfig,account,cmd):
         outoServ = AutoServ(defaultConfig,account,tgConfig)
         ssh = outoServ.ssh
+        outoServ.logger.info(f"os cmd::{cmd}")
         if not cmd:# 如果github工作流使用命令 优先级最高
             cmd = account['cmd']
         args = cmd.split()
@@ -508,6 +509,7 @@ class AutoServ(object):
         elif args and len(args) ==3:
             cmd2 = args[2]
             cmd1 = args[1]
+            logger.info("cmd::"+cmd)
             try:
                 waitTime = int(cmd2)
                 if cmd1 == 'reset':
@@ -538,7 +540,7 @@ class AutoServ(object):
         return outoServ
 
 if __name__ == "__main__":
-    cmd = os.getenv("CMD")
+    cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
     with open('user_info.json', 'r') as f:
