@@ -46,6 +46,7 @@
 
   }
 }
+4、secrets配置的内容必须符合json格式,[校验json地址](https://www.bejson.com/explore/index_new/)
 5、【必须配置】打开项目 user_info_example.json 按照以下说明添加 找到Setting->Secrets->actions 添加secrets名称：USER_INFO(包含账号密码信息信息的 JSON 数据)。，例如：
     注意:【】内容只是配置说明，配置时必须包括中括号都要删除，示例配置结构是:{"tg_config":{相关自定义配置},"accounts":[{账号一},{账号二},{账号三},...]}，具体就参照下方
 {
