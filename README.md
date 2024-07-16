@@ -106,8 +106,8 @@
 |username|用户名|
 |password|密码|
 |domain|你申请的域名|
-|pannelnum|你申请机器号 CT8此项默认即可|
-|server_type|服务器类型 1: Serv00  2: CT8  默认为1 |
+|pannelnum|你申请机器号 CT8，此项默认即可|
+|server_type|服务器类型 1: Serv00  2: CT8  ，默认为1|
 |cmd|reset:重新安装节点  keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间 单位为分钟 如： python restart 20 就表示重启并保活 时间设置为20分钟|
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
 |||
