@@ -49,7 +49,7 @@ class AutoServ(object):
         else:
             self.nodeHost = self.DOMAIN
         self.USERNAME = account["username"]
-        print(self.USERNAME +" run.................")
+        print(self.DOMAIN +"::"+self.USERNAME +" run.................")
         #密码
         self.PASSWORD = account["password"]
         # 根路径 默认以app命名
@@ -394,7 +394,9 @@ class AutoServ(object):
             self.getNodejsFile(self.ssh)
             if ports and len(ports) > 0:
                 for index,port in enumerate(ports):
-
+                    if port not in self.uuidPorts:
+                        self.logger.info(str(port)+" is not auto create ,continue")
+                        continue
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
@@ -444,11 +446,15 @@ class AutoServ(object):
                 if len(ports) >=3:
                     self.runningPorts = ports
                 for index,port in enumerate(ports):
+                    if port not in self.uuidPorts:
+                        self.logger.info(str(port)+" is not auto create ,continue")
+                        continue
                     ouuid = self.uuidPorts[str(port)]
                     cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
                     stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
                     res = stdout.read().decode()
                     pids = res.split('\r\n')
+
                     if pids and len(pids) > 0 and pids[0]:
                         self.logger.info(self.DOMAIN+"::"+self.USERNAME+"::"+str(pids[0]) +" is running")
                         continue
@@ -514,7 +520,8 @@ class AutoServ(object):
                 if outoServ.alive:
                     logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
                     AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
-                    AutoServ.sched.start()
+                    print(f"AutoServ.sched.state:{AutoServ.sched.state}")
+
             except Exception as e:
                 print(e)
                 logger.error(e)
@@ -549,12 +556,17 @@ if __name__ == "__main__":
                 future_results.append(res)
                 #break
                 pass
-            """
-            results = []
+            results=[]
             for future in concurrent.futures.as_completed(future_results):
                 result = future.result()
-            results.append(result)
-            print(f"Task result: {result}")
+                results.append(result)
+            #print(f"Task result: {results}")
+            print(f"sched::{AutoServ.sched.state}")
+            AutoServ.sched.start()
+            """
+            results = []
+            
+            
             
             """
 
