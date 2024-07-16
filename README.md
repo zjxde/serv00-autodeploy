@@ -106,8 +106,8 @@
 ## (五).相关教程
 
 ```
-1、Serv00与ct8自动化批量保号 : [https://github.com/yixiu001/serv00-login](https://)
-2、服务器Serv00免费申请教程: [https://blog.yixiu.us.kg/posts/gratis/freevpsandvless/](https://)
-3、TG技术交流群：[https://t.me/yxjsjl](https://)
+1、Serv00与ct8自动化批量保号 :[ https://github.com/yixiu001/serv00-login](https://)
+2、服务器Serv00免费申请教程: [ https://blog.yixiu.us.kg/posts/gratis/freevpsandvless/](https://)
+3、TG技术交流群：[ https://t.me/yxjsjl](https://)
 ```
 
