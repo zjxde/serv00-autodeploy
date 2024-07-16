@@ -506,17 +506,18 @@ class AutoServ(object):
                 elif cmd1=='restart':
                     outoServ.alive = 1
                     outoServ.restart()
-                    AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
-                    AutoServ.sched.start()
-                    outoServ.keepAlive(waitTime)
+                    #AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                    #AutoServ.sched.start()
+                    #outoServ.keepAlive(waitTime)
                 elif cmd ==  'keepalive':
                     outoServ.alive = 1
                     logger.info("输入命令为：keepalive")
                 else:
                     logger.error("请输入如下命令：reset、restart、keepalive")
                     ssh.close()
-                AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
-                AutoServ.sched.start()
+                if outoServ.alive:
+                    AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                    AutoServ.sched.start()
             except Exception as e:
                 print(e)
                 logger.error(e)
