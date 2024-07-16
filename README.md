@@ -28,7 +28,7 @@
 
 **1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**
     (注：此项可直接复制下面的内容配置即可)
-```
+```json
 {
   "uuid_ports": [
     {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},
