@@ -11,7 +11,7 @@
 ```
 1、访问原始仓库页面： 打开你想要 fork 的 GitHub 仓库页面。
 2、Fork 仓库 点击页面右上角的 "Fork" 按钮，将仓库 fork 到你的 GitHub 账户下。
-3、若没有Serv00服务器 请参照(五)服务器Serv00免费申请教程,从教程【搭建vless节点】步骤开始就可使用本项目进行自动化部署：
+3、若没有Serv00服务器 请参照(六)服务器Serv00免费申请教程,从教程【搭建vless节点】步骤开始就可使用本项目进行自动化部署：
    包括自动申请随机端口、自动化配置服务器运行环境、自建节点启动，节点保活节点下线自动重启，支持node和PM2两种启动方式
 ```
 
@@ -24,7 +24,7 @@
     获取到你的 Chat ID 方法二，可以通过向 Bot 发送一条消息，然后访问 https://api.telegram.org/bot<your_bot_token>/getUpdates 找到 Chat ID
 ```
 
-### 配置 GitHub Secrets
+## (三). 配置 GitHub Secrets
 
 **1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**<br>
     (注：此项可直接复制下面的内容配置即可)
@@ -112,7 +112,7 @@
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
 |||
 
-## (三). 启动 GitHub Actions
+## (四). 启动 GitHub Actions
 
 ```
 1、配置 GitHub Actions
@@ -127,7 +127,7 @@
     的数值可按自己需求自行修改( 参数说明：reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间，单位为分钟)
 ```
 
-## (四).注意事项
+## (五).注意事项
 
 ```
 1、保密性: Secrets 是敏感信息，请确保不要将它们泄露到公共代码库或未授权的人员。
@@ -135,7 +135,7 @@
 3、通过以上步骤，你就可以成功将代码 fork 到你的仓库下并运行了。如果需要进一步的帮助或有其他问题，请随时告知！
 ```
 
-## (五).相关教程
+## (六).相关教程
 
 1、[服务器Serv00免费申请教程](https://blog.yixiu.us.kg/posts/gratis/freevpsandvless/)
 2、[Serv00与ct8自动化批量保号](https://github.com/yixiu001/serv00-login)
