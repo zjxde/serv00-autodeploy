@@ -61,11 +61,7 @@ class AutoServ(object):
         #self.USE_PM2 = envConfig['usepm2']
         #是否执行npm install命令 比较耗时建议不开启 手动执行
         self.OUTO_NPM_INSTALL = envConfig['outo_npm_install']
-        # 部署节点个数
-
-        self.SEND_TG = envConfig['send_tg']
-        if tgConfig['send_tg']:
-            self.SEND_TG = tgConfig['send_tg']
+        
         # 程序简单路径 默认从app文件后的路径 如'/serv00-vless/app'
         #self.APP_PATH = os.getenv('app_path')
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
