@@ -77,6 +77,10 @@ class AutoServ(object):
                 self.TIMEOUT = tgConfig['timeout']
             else:
                 self.TIMEOUT = 600
+            if 'tryTimes' in tgConfig:
+                self.tryTimes = tgConfig['tryTimes']
+            else:
+                self.tryTimes = 3
         self.proxy = ''
         """
         proxies = envConfig['proxies']
@@ -129,7 +133,7 @@ class AutoServ(object):
         logininfo['password'] = self.PASSWORD
         self.portUidInfos = defaultConfig['uuid_ports']
         self.serv = Serv00(self.PANNELNUM, logininfo,self.HOSTNAME)
-
+        self.hostfullName = self.DOMAIN+"::"+self.USERNAME+"::"
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
@@ -307,7 +311,7 @@ class AutoServ(object):
                     stdin, stdout, stderr = self.ssh.exec_command(lscmd,get_pty=True)
                     res = stdout.read().decode()
                     files = res.split('\r\n')
-                    self.logger.info("main js ::"+files[0])
+                    self.logger.info(self.hostfullName+"main js ::"+files[0])
                     self.logger.info(wget+"::: try timeout::"+str(timeout))
                     time.sleep(delayTime)
 
@@ -319,12 +323,12 @@ class AutoServ(object):
             cpcmd = 'cp '+self.FULLPATH+'.js '+self.FULLPATH+'-template.js'
             self.executeCmd(ssh, cpcmd,5)
             self.logger.info(cpcmd + ":::finish")
-            self.logger.info("init env is ok....")
+            self.logger.info(self.hostfullName+"init env is ok....")
 
 
         except Exception as e:
             self.logger.error(e)
-            self.logger.error(":::env init error")
+            self.logger.error(self.hostfullName+":::env init error")
     #远程执行相关命令
     def executeCmd(self,ssh, cmd,waitTime):
         stdin, stdout, stderr = ssh.exec_command(cmd,timeout=waitTime,get_pty=True)
@@ -339,7 +343,7 @@ class AutoServ(object):
                     break
             self.logger.info(cmd +" execute finish.....")
         except Exception as e:
-            self.logger.error("execute cmd error")
+            self.logger.error(self.hostfullName+"execute cmd error::"+cmd)
     #执行命令返回结果
     def executeNewCmd(self,ssh,cmd,waitTime):
         stdin, stdout, stderr = ssh.exec_command(cmd,timeout=waitTime,get_pty=True)
@@ -353,11 +357,11 @@ class AutoServ(object):
         if self.USE_PM2:
             pidcmd = self.pm2path + ' delete all'
             self.executeNewCmd(ssh,pidcmd,5)
-            self.logger.info("pm2 kill all pid")
+            self.logger.info(self.hostfullName+"pm2 kill all pid")
         else:
             pidcmd = self.pm2path + ' delete all'
             self.executeNewCmd(ssh,pidcmd,5)
-            self.logger.info("pm2 kill all pid")
+            self.logger.info(self.hostfullName+"pm2 kill all pid")
             cmd = 'pgrep -f '+self.KILL_PID_PATH
             stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
             res = stdout.read().decode()
@@ -367,7 +371,7 @@ class AutoServ(object):
                     if pid :
                         pidcmd = 'kill -9 '+pid
                         self.executeNewCmd(ssh,pidcmd,5)
-                        self.logger.info("kill pid::"+pid)
+                        self.logger.info(self.hostfullName+"kill pid::"+pid)
     # 发送节点到tg
     def sendTelegramMessage(self,message):
         url = f"https://api.telegram.org/bot{self.TG_BOT_TOKEN}/sendMessage"
@@ -398,13 +402,20 @@ class AutoServ(object):
     # 只重启 不重新部署环境
     def restart(self):
         try:
-            self.killPid(self.ssh)
-            ports = self.serv.getloginPorts();
-            self.getNodejsFile(self.ssh)
+
+            for tryTime in range(self.tryTimes):
+                try:
+                    self.killPid(self.ssh)
+                    ports = self.serv.getloginPorts();
+                    self.getNodejsFile(self.ssh)
+                except:
+                    tryTime += tryTime
+                    self.logger.info(self.hostfullName+"execute kill pid or get nodejs file timeout "+str(tryTime))
+
             if ports and len(ports) > 0:
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
-                        self.logger.info(str(port)+" is not auto create ,continue")
+                        self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
                         continue
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
@@ -418,8 +429,8 @@ class AutoServ(object):
                         #self.loop.run_until_complete(asyncio.wait(tasklist))
                         self.sendTgMsgSync(msg)
         except Exception as e:
-            print(f"restart error: {e}")
-            self.logger.error(self.DOMAIN+" restart error")
+            self.logger.error(e)
+            self.logger.error(self.hostfullName+" restart error")
         finally:
             if not self.alive:
                 if self.ssh is not None:
@@ -437,7 +448,11 @@ class AutoServ(object):
                     uuid = filename.split('_')[1]
                     port = filename.split('_')[2].replace(".js","")
                     self.uuidPorts[port] = uuid
-
+        else:
+            self.logger.info(self.hostfullName+"not find nodejs file,regenerate ")
+            self.RESET = 0
+            self.main()
+            self.logger.info(self.hostfullName+"not find nodejs file,regenerate ")
 
 
     #保活
@@ -475,11 +490,11 @@ class AutoServ(object):
                     self.startCmd(templateName,port,ssh)
 
             #time.sleep(waitTime)
-            self.logger.info(self.DOMAIN+"::"+self.USERNAME+" nodes keepalive")
+            self.logger.info(self.hostfullName+" nodes keepalive")
         except Exception as e:
 
             self.logger.error(f"keepAlive error: {e}")
-            self.logger.error(self.DOMAIN+"::"+self.USERNAME+" keepAlive error")
+            self.logger.error(self.hostfullName+" keepAlive error")
 
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
