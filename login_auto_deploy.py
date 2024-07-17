@@ -28,7 +28,7 @@ class AutoServ(object):
     def __init__(self, defaultConfig,account,tgConfig):
 
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
-        self.showNodeInfo = 1
+        self.showNodeInfo = 0
         if 'uuid_ports' in account and account['uuid_ports']:
             defaultConfig['uuid_ports'] = account['uuid_ports']
 
