@@ -26,7 +26,9 @@ class AutoServ(object):
 
     sched = BlockingScheduler()
     def __init__(self, defaultConfig,account,tgConfig):
+
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
+        self.showNodeInfo = 1
         if 'uuid_ports' in account and account['uuid_ports']:
             defaultConfig['uuid_ports'] = account['uuid_ports']
 
@@ -144,9 +146,9 @@ class AutoServ(object):
         self.logger.info("USERNAME is "+self.USERNAME)
         self.logger.info("BASEPATH is "+self.BASEPATH)
         self.ssh = self.getSshClient()
-        logininfo = {}
-        logininfo['username'] = self.USERNAME
-        logininfo['password'] = self.PASSWORD
+        self.logininfo = {}
+        self.logininfo['username'] = self.USERNAME
+        self.logininfo['password'] = self.PASSWORD
         if 'uuid_ports' in defaultConfig:
             self.portUidInfos = defaultConfig['uuid_ports']
         else:
@@ -158,7 +160,7 @@ class AutoServ(object):
                 self.portUidInfos.append(defaultPortUid)
 
 
-        self.serv = Serv00(self.PANNELNUM, logininfo,self.HOSTNAME)
+        self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
         self.hostfullName = self.DOMAIN+"::"+self.USERNAME+"::"
         self.uuidPorts = {}
         self.alive = 0
@@ -166,9 +168,15 @@ class AutoServ(object):
             self.getNodejsFile(self.ssh)
 
         self.runningPorts = []
-        self.logger.info(self.USERNAME +" server init finish.................")
+        self.logger.info(self.hostfullName +" server init finish.................")
+        self.initRes = 0
         #ftp = None
     # 获取远程ssh客户端链接
+    def setSSHClient(self):
+        if self.ssh:
+            self.ssh = self.getSshClient()
+        if self.serv:
+            self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
     def getSshClient(self):
         # SSHclient 实例化
         ssh: SSHClient = paramiko.SSHClient()
@@ -203,7 +211,7 @@ class AutoServ(object):
         else:
             ouuid = myuuid
 
-        logging.info("uuid:: " + ouuid+",port::"+str(port))
+        #logging.info("uuid:: " + ouuid+",port::"+str(port))
         uuidinfo = ouuid.replace("-", "")
         #sftp_client = ssh.open_sftp()
         # 打开远程文件
@@ -223,7 +231,8 @@ class AutoServ(object):
         file.write(newcontent)
         file.flush()
         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
-        self.logger.info("url is::"+msg)
+        if self.showNodeInfo:
+            self.logger.info("url is::"+msg)
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
         #异步发送节点链接到tg
@@ -444,7 +453,8 @@ class AutoServ(object):
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
-                    self.logger.info("url is::"+msg)
+                    if self.showNodeInfo:
+                        self.logger.info("url is::"+msg)
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
                     self.startCmd(templateName,port,self.ssh)
@@ -473,10 +483,13 @@ class AutoServ(object):
                     port = filename.split('_')[2].replace(".js","")
                     self.uuidPorts[port] = uuid
         else:
-            self.logger.info(self.hostfullName+"not find nodejs file,regenerate ")
+            msg = self.hostfullName+"not find nodejs file,regenerate "
+            if self.SEND_TG:
+                self.sendTgMsgSync(msg)
+            self.logger.info(msg)
             self.RESET = 0
             self.main()
-            self.logger.info(self.hostfullName+"not find nodejs file,regenerate ")
+            self.logger.info(msg)
     def delNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
         cmd = "ls "+pidfullpath +" | grep 'index_.*.js'"
@@ -519,7 +532,8 @@ class AutoServ(object):
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[port]
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
-                    self.logger.info("url is::"+msg)
+                    if self.showNodeInfo:
+                        self.logger.info("url is::"+msg)
                     self.startCmd(templateName,port,ssh)
 
             #time.sleep(waitTime)
@@ -535,8 +549,9 @@ class AutoServ(object):
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
         ssh = None
+        outoServ = AutoServ(defaultConfig,account,tgConfig)
         try:
-            outoServ = AutoServ(defaultConfig,account,tgConfig)
+            outoServ.setSSHClient()
             ssh = outoServ.ssh
             outoServ.logger.info(f"os cmd::{cmd}")
             if not cmd:# 如果github工作流使用命令 优先级最高
@@ -549,8 +564,10 @@ class AutoServ(object):
                 logger.info(cmd)
                 if cmd == 'reset':
                     outoServ.main()
+                    outoServ.initRes = 1
                 elif cmd == 'restart':
                     outoServ.restart()
+                    outoServ.initRes = 1
                 elif cmd ==  'keepalive':
                     outoServ.alive = 1
                     AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=10)
@@ -584,15 +601,19 @@ class AutoServ(object):
                     if outoServ.alive:
                         logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
                         AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                        outoServ.initRes = 1
                         print(f"AutoServ.sched.state:{AutoServ.sched.state}")
 
                 except Exception as e:
                     print(e)
                     logger.error(e)
                     ssh.close()
-                account['res'] = "success"
+                #account['res'] = "success"
+                return outoServ
         except Exception as e:
-            account['res'] = 'error'
+            outoServ.logger.log(e)
+            #account['res'] = 'error'
+            return outoServ
         finally:
             if ssh:
                 ssh.close()
@@ -628,10 +649,12 @@ if __name__ == "__main__":
                 pass
             results=[]
             for future in concurrent.futures.as_completed(future_results):
-                result = future.result()
-                uid = result['domain'] +"-"+result['username']+"-"+result['res']
+                outoServ = future.result()
+                outoServ: outoServ = future.result()
+                uid = outoServ.DOMAIN +"-"+outoServ.USERNAME+"-"+str(outoServ.initRes)
+                print(f"Task result: {uid}")
                 results.append(uid)
-            print(f"Task result: {results}")
+            print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
             AutoServ.sched.start()
             """
