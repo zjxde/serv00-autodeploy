@@ -241,7 +241,8 @@ class AutoServ(object):
             #tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
 
     def sendTgMsgSync(self,msg):
-        self.logger.info("send tg msg start..."+msg)
+        if self.showNodeInfo:
+            self.logger.info("send tg msg start..."+msg)
         with ThreadPoolExecutor(max_workers=5) as executor:
             # 使用executor提交任务
             executor.submit(self.sendTelegramMessage,msg)
