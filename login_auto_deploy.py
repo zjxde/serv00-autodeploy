@@ -54,6 +54,8 @@ class AutoServ(object):
         self.PASSWORD = account["password"]
         # 根路径 默认以app命名
 
+        #删除pm2
+        self.delePm2 = 1
 
         envConfig = defaultConfig["env_config"]
         #是否重置运行环境
@@ -359,13 +361,18 @@ class AutoServ(object):
             self.executeNewCmd(ssh,pidcmd,5)
             self.logger.info(self.hostfullName+"pm2 kill all pid")
         else:
-            pidcmd = self.pm2path + ' delete all'
-            self.executeNewCmd(ssh,pidcmd,5)
-            self.logger.info(self.hostfullName+"pm2 kill all pid")
+            try:
+                if self.delePm2:
+                    pidcmd = self.pm2path + ' delete all'
+                    self.executeNewCmd(ssh,pidcmd,5)
+                    self.logger.info(self.hostfullName+"pm2 kill all pid")
+            except Exception as e:
+                    self.logger.info(self.hostfullName+"pm2 env not found or time out")
+                    self.delePm2 = 0
             cmd = 'pgrep -f '+self.KILL_PID_PATH
-            stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
-            res = stdout.read().decode()
-            pids = res.split('\r\n')
+            pids,stdin,stdout, stderr = self.executeNewCmd(ssh,cmd,5)
+            #res = stdout.read().decode()
+            #pids = res.split('\r\n')
             if pids and len(pids) > 0:
                 for pid in pids:
                     if pid :
@@ -402,16 +409,9 @@ class AutoServ(object):
     # 只重启 不重新部署环境
     def restart(self):
         try:
-
-            for tryTime in range(self.tryTimes):
-                try:
-                    self.killPid(self.ssh)
-                    ports = self.serv.getloginPorts();
-                    self.getNodejsFile(self.ssh)
-                except:
-                    tryTime += tryTime
-                    self.logger.info(self.hostfullName+"execute kill pid or get nodejs file timeout "+str(tryTime))
-
+            self.killPid(self.ssh)
+            ports = self.serv.getloginPorts();
+            self.getNodejsFile(self.ssh)
             if ports and len(ports) > 0:
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
@@ -439,9 +439,9 @@ class AutoServ(object):
     def getNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
         cmd = "ls "+pidfullpath +" | grep 'index_.*.js'"
-        stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
-        res = stdout.read().decode()
-        filenames = res.split('\r\n')
+        filenames,stdin, stdout, stderr = self.executeNewCmd(ssh,cmd,10)
+        #res = stdout.read().decode()
+        #filenames = files.split('\r\n')
         if filenames and len(filenames) > 0:
             for filename in filenames:
                 if filename:
@@ -558,7 +558,7 @@ if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
-    with open('user_info.json', 'r') as f:
+    with open('user_info2.json', 'r') as f:
         accounts = json.load(f)
     try:
         with open('env_config.json', 'r') as f:
