@@ -242,9 +242,9 @@ class AutoServ(object):
 
     def sendTgMsgSync(self,msg):
         if self.showNodeInfo:
-            self.logger.info("send tg msg start..."+msg)
+            self.logger.info(self.hostfullName+"send tg msg start...")
         else:
-            self.logger.info("send tg msg start...")
+            self.logger.info(self.hostfullName+"send tg msg start...")
         with ThreadPoolExecutor(max_workers=5) as executor:
             # 使用executor提交任务
             executor.submit(self.sendTelegramMessage,msg)
