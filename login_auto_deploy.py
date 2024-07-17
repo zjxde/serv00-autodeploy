@@ -631,7 +631,7 @@ if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
-    with open('user_info.json', 'r') as f:
+    with open('user_info2.json', 'r') as f:
         accounts = json.load(f)
     try:
         with open('env_config.json', 'r') as f:
@@ -657,10 +657,10 @@ if __name__ == "__main__":
                 pass
             results=[]
             for future in concurrent.futures.as_completed(future_results):
-                outoServ = future.result()
-                outoServ: outoServ = future.result()
-                uid = outoServ.DOMAIN +"-"+outoServ.USERNAME+"-"+str(outoServ.initRes)
-                outoServ.logger.info(f"Task result: {uid}")
+                autoServ = future.result()
+                autoServ: AutoServ = future.result()
+                uid = autoServ.DOMAIN +"-"+autoServ.USERNAME+"-"+str(autoServ.initRes)
+                autoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
             print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
