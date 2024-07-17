@@ -495,6 +495,9 @@ class AutoServ(object):
 
             self.logger.error(f"keepAlive error: {e}")
             self.logger.error(self.hostfullName+" keepAlive error")
+        finally:
+            if self.ssh is not None:
+                self.ssh.close()
 
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
