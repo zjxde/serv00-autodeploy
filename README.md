@@ -30,11 +30,6 @@
     (注：此项可直接复制下面的内容配置即可)
 ```json
 {
-  "uuid_ports": [
-    {"uuid": "cbbc53be-7436-4418-bbc7-0243d057bf7e", "port": 0},
-    {"uuid": "5ccac840-3c3b-11ef-b292-005056c00008", "port": 0},
-    {"uuid": "6adcae4e-16cc-443d-98c0-49f5c5dd46b9", "port": 0}
-  ],
   "env_config": {
     "reset": 1,
     "outo_npm_install": 1,

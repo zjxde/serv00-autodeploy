@@ -69,6 +69,7 @@ class AutoServ(object):
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
         self.CODE_SOURCE_URL = envConfig['code_source_url']
         #tgConfig = userInfo['tg_config']
+        self.NODEJS_NAME = envConfig['nodejs_name']
         if tgConfig:
             self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
             self.TG_CHAT_ID = tgConfig['tg_chat_id']
@@ -83,13 +84,25 @@ class AutoServ(object):
                 self.tryTimes = tgConfig['tryTimes']
             else:
                 self.tryTimes = 3
+            #兼容旧版本 user_info.json 配置优先级最高
+            if 'reset' in tgConfig:
+                self.RESET = tgConfig['reset']
+            if 'outo_npm_install' in tgConfig:
+                self.OUTO_NPM_INSTALL = tgConfig['outo_npm_install']
+            if 'code_source_url' in tgConfig:
+                self.CODE_SOURCE_URL = tgConfig['code_source_url']
+            if 'kill_pid_path' in tgConfig:
+                self.KILL_PID_PATH = tgConfig['kill_pid_path']
+            if 'nodejs_name' in tgConfig:
+                self.NODEJS_NAME = tgConfig['nodejs_name']
+
         self.proxy = ''
         """
         proxies = envConfig['proxies']
         if proxies:
             self.PROXIES = proxies[random.randint(0,len(proxies)-1)]
         """
-        self.configInfo = defaultConfig['uuid_ports']
+        #self.configInfo = defaultConfig['uuid_ports']
 
         #self.PANNELNUM = 6
 
@@ -97,14 +110,14 @@ class AutoServ(object):
             self.BASEPATH = account["basepath"]
         else:
             self.BASEPATH = "/home/"+self.USERNAME+"/domains/"+self.DOMAIN+"/app2"
-        self.NODEJS_NAME = envConfig['nodejs_name']
+
         self.PIDPATH=self.CODE_SOURCE_URL.split('/')[-1]
         self.APP_PATH = '/'+self.PIDPATH+'/'+self.NODEJS_NAME
         self.FULLPATH = self.BASEPATH+self.APP_PATH
         #self.SEND_TG = 0
         #self.loop = asyncio.get_event_loop()
 
-        self.KILL_PID_PATH = envConfig['kill_pid_path']
+        #self.KILL_PID_PATH = envConfig['kill_pid_path']
         self.pm2path =  '/home/'+self.USERNAME+'/.npm-global/bin/pm2'
 
         if self.PANNELNUM is None:
@@ -133,7 +146,17 @@ class AutoServ(object):
         logininfo = {}
         logininfo['username'] = self.USERNAME
         logininfo['password'] = self.PASSWORD
-        self.portUidInfos = defaultConfig['uuid_ports']
+        if 'uuid_ports' in defaultConfig:
+            self.portUidInfos = defaultConfig['uuid_ports']
+        else:
+            defaultPortUid={}
+            defaultPortUid['uuid']=""
+            defaultPortUid['port']=0
+            self.portUidInfos=[]
+            for i in range(3):
+                self.portUidInfos.append(defaultPortUid)
+
+
         self.serv = Serv00(self.PANNELNUM, logininfo,self.HOSTNAME)
         self.hostfullName = self.DOMAIN+"::"+self.USERNAME+"::"
         self.uuidPorts = {}
@@ -165,7 +188,7 @@ class AutoServ(object):
         return ssh
 
     # 自动执行 启动节点
-    def excute(self,ssh,sftp_client,uuid,port):
+    def execute(self, ssh, sftp_client, myuuid, port):
         global  ftp, data, file,ouuid
         if port is not None and port == 0:
             self.logger.info('not set port ,will genate random')
@@ -173,11 +196,11 @@ class AutoServ(object):
 
 
             self.logger.info('auto get port from server')
-        if uuid is None:
+        if not myuuid:
             logging.info("not set uuid ,will genate random")
             ouuid = str(uuid.uuid1())
         else:
-            ouuid = uuid
+            ouuid = myuuid
 
         logging.info("uuid:: " + ouuid+",port::"+str(port))
         uuidinfo = ouuid.replace("-", "")
@@ -225,6 +248,7 @@ class AutoServ(object):
                 ssh = self.getSshClient()
                 ftp = ssh.open_sftp()
                 self.killPid(ssh)
+                self.delNodejsFile(ssh)
             except Exception as e:
                 self.logger.error("connect is timeout or error")
 
@@ -255,7 +279,7 @@ class AutoServ(object):
                 if(port == 0):
                     port = ports[i]
 
-                self.excute(ssh,ftp,UUID,port)
+                self.execute(ssh, ftp, UUID, port)
                 if len(uuidPorts) > 0:
                     if port not in uuidPorts:
                         uuidPorts[port] = UUID
@@ -266,8 +290,7 @@ class AutoServ(object):
 
         except Exception as e:
             self.logger.error(e)
-            raise Exception("main方法异常，请检查变量是否配置准确")
-
+            #raise Exception("main方法异常，请检查变量是否配置准确")
         finally:
             #if not self.alive:
             if ftp:
@@ -453,8 +476,17 @@ class AutoServ(object):
             self.RESET = 0
             self.main()
             self.logger.info(self.hostfullName+"not find nodejs file,regenerate ")
-
-
+    def delNodejsFile(self,ssh):
+        pidfullpath = self.BASEPATH+"/"+self.PIDPATH
+        cmd = "ls "+pidfullpath +" | grep 'index_.*.js'"
+        filenames,stdin, stdout, stderr = self.executeNewCmd(ssh,cmd,10)
+        #res = stdout.read().decode()
+        #filenames = files.split('\r\n')
+        if filenames and len(filenames) > 0:
+            for filename in filenames:
+                if filename:
+                    delcmd = "rm -rf "+pidfullpath+"/"+filename
+                    self.executeNewCmd(ssh,delcmd,10)
     #保活
     def keepAlive(self):
         self.ssh = self.getSshClient()
@@ -501,61 +533,69 @@ class AutoServ(object):
 
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
-        outoServ = AutoServ(defaultConfig,account,tgConfig)
-        ssh = outoServ.ssh
-        outoServ.logger.info(f"os cmd::{cmd}")
-        if not cmd:# 如果github工作流使用命令 优先级最高
-            cmd = account['cmd']
-        args = cmd.split()
-        logger = outoServ.logger;
-        logger.info("cmd::"+cmd)
-        if args and len(args) ==2:
-            cmd = args[1]
-            logger.info(cmd)
-            if cmd == 'reset':
-                outoServ.main()
-            elif cmd == 'restart':
-                outoServ.restart()
-            elif cmd ==  'keepalive':
-                outoServ.alive = 1
-                AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=10)
-                AutoServ.sched.start()
-            else:
-                logger.error("请输入如下命令：reset、restart、keepalive")
-                ssh.close()
-
-        elif args and len(args) ==3:
-            cmd2 = args[2]
-            cmd1 = args[1]
+        ssh = None
+        try:
+            outoServ = AutoServ(defaultConfig,account,tgConfig)
+            ssh = outoServ.ssh
+            outoServ.logger.info(f"os cmd::{cmd}")
+            if not cmd:# 如果github工作流使用命令 优先级最高
+                cmd = account['cmd']
+            args = cmd.split()
+            logger = outoServ.logger;
             logger.info("cmd::"+cmd)
-            try:
-                waitTime = int(cmd2)
-                if cmd1 == 'reset':
-                    outoServ.alive = 1
+            if args and len(args) ==2:
+                cmd = args[1]
+                logger.info(cmd)
+                if cmd == 'reset':
                     outoServ.main()
-                    #outoServ.keepAlive()
-                elif cmd1=='restart':
-                    outoServ.alive = 1
+                elif cmd == 'restart':
                     outoServ.restart()
-                    #AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
-                    #AutoServ.sched.start()
-                    #outoServ.keepAlive(waitTime)
                 elif cmd ==  'keepalive':
                     outoServ.alive = 1
-                    logger.info("输入命令为：keepalive")
+                    AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=10)
+                    #AutoServ.sched.start()
                 else:
                     logger.error("请输入如下命令：reset、restart、keepalive")
                     ssh.close()
-                if outoServ.alive:
-                    logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
-                    AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
-                    print(f"AutoServ.sched.state:{AutoServ.sched.state}")
 
-            except Exception as e:
-                print(e)
-                logger.error(e)
+            elif args and len(args) ==3:
+                cmd2 = args[2]
+                cmd1 = args[1]
+                logger.info("cmd::"+cmd)
+                try:
+                    waitTime = int(cmd2)
+                    if cmd1 == 'reset':
+                        outoServ.alive = 1
+                        outoServ.main()
+                        #outoServ.keepAlive()
+                    elif cmd1=='restart':
+                        outoServ.alive = 1
+                        outoServ.restart()
+                        #AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                        #AutoServ.sched.start()
+                        #outoServ.keepAlive(waitTime)
+                    elif cmd ==  'keepalive':
+                        outoServ.alive = 1
+                        logger.info("输入命令为：keepalive")
+                    else:
+                        logger.error("请输入如下命令：reset、restart、keepalive")
+                        ssh.close()
+                    if outoServ.alive:
+                        logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
+                        AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
+                        print(f"AutoServ.sched.state:{AutoServ.sched.state}")
+
+                except Exception as e:
+                    print(e)
+                    logger.error(e)
+                    ssh.close()
+                account['res'] = "success"
+        except Exception as e:
+            account['res'] = 'error'
+        finally:
+            if ssh:
                 ssh.close()
-        return outoServ
+        return account
 
 if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
@@ -588,8 +628,9 @@ if __name__ == "__main__":
             results=[]
             for future in concurrent.futures.as_completed(future_results):
                 result = future.result()
-                results.append(result)
-            #print(f"Task result: {results}")
+                uid = result['domain'] +"-"+result['username']+"-"+result['res']
+                results.append(uid)
+            print(f"Task result: {results}")
             print(f"sched::{AutoServ.sched.state}")
             AutoServ.sched.start()
             """

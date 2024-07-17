@@ -27,7 +27,7 @@ jobs:
         env:
           USER_INFO: ${{ secrets.USER_INFO}}  # 从GitHub Secrets中获取环境变量
 
-      - name: Create account.json from environment variable
+      - name: Create env_config from environment variable
         run: echo "$ENV_CONFIG" > env_config.json
         env:
           ENV_CONFIG: ${{ secrets.ENV_CONFIG}}  # 从GitHub variables中获取环境变量
@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 运行登录脚本
+      - name: 运行自动化部署
         env:
           USER_INFO: ${{ secrets.USER_INFO }}
           ENV_CONFIG: ${{ secrets.ENV_CONFIG }}
