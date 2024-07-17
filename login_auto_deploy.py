@@ -68,6 +68,7 @@ class AutoServ(object):
         #self.APP_PATH = os.getenv('app_path')
         # 源代码路径 'git clone http://github.com/zjxde/serv00-vless'
         self.CODE_SOURCE_URL = envConfig['code_source_url']
+        self.KILL_PID_PATH = envConfig['kill_pid_path']
         #tgConfig = userInfo['tg_config']
         self.NODEJS_NAME = envConfig['nodejs_name']
         if tgConfig:
