@@ -655,7 +655,7 @@ if __name__ == "__main__":
                 outoServ = future.result()
                 outoServ: outoServ = future.result()
                 uid = outoServ.DOMAIN +"-"+outoServ.USERNAME+"-"+str(outoServ.initRes)
-                print(f"Task result: {uid}")
+                outoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
             print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
