@@ -452,6 +452,7 @@ class AutoServ(object):
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
                         self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
+                        self.main()
                         continue
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
@@ -521,6 +522,7 @@ class AutoServ(object):
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
                         self.logger.info(str(port)+" is not auto create ,continue")
+                        self.main()
                         continue
                     ouuid = self.uuidPorts[str(port)]
                     cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
