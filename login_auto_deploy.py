@@ -223,7 +223,7 @@ class AutoServ(object):
         templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
         try:
             sftp_client.remove(templateName)
-            self.logger.info(templateName + ":::file exist")
+            self.logger.info(self.FULLPATH +"_"+str(port)+".js"+ ":::file exist")
         except Exception:
             self.logger.info(templateName + ":::file not exist")
         self.logger.info("The file remove finish.")
@@ -523,6 +523,9 @@ class AutoServ(object):
                     if port not in self.uuidPorts:
                         self.logger.info(str(port)+" is not auto create ,continue")
                         self.main()
+                        if self.SEND_TG:
+                            msg = self.hostfullName+"重新创建部署节点ok，请重新到TG复制最新的节点信息"
+                            self.sendTgMsgSync(msg)
                         continue
                     ouuid = self.uuidPorts[str(port)]
                     cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
@@ -597,7 +600,7 @@ class AutoServ(object):
                         #AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
                         #AutoServ.sched.start()
                         #outoServ.keepAlive(waitTime)
-                    elif cmd ==  'keepalive':
+                    elif cmd =='keepalive':
                         outoServ.alive = 1
                         logger.info("输入命令为：keepalive")
                     else:
