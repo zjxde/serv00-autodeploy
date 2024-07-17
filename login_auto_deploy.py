@@ -78,7 +78,7 @@ class AutoServ(object):
             if 'timeout' in tgConfig:
                 self.TIMEOUT = tgConfig['timeout']
             else:
-                self.TIMEOUT = 600
+                self.TIMEOUT = 100
             if 'tryTimes' in tgConfig:
                 self.tryTimes = tgConfig['tryTimes']
             else:
@@ -150,6 +150,8 @@ class AutoServ(object):
         ssh: SSHClient = paramiko.SSHClient()
         # 保存服务器密钥
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        if self.RESET:
+            self.TIMEOUT = 600
         # 输入服务器地址，账户名，密码
         ssh.connect(
             hostname=self.HOSTNAME,
@@ -267,14 +269,12 @@ class AutoServ(object):
             raise Exception("main方法异常，请检查变量是否配置准确")
 
         finally:
-            if not self.alive:
-                if ftp :
-                    ftp.close()
-                    del ftp
-                if ssh :
-                    ssh.close()
-            else:
-                self.getNodejsFile(ssh)
+            #if not self.alive:
+            if ftp:
+                ftp.close()
+                del ftp
+            if ssh:
+                ssh.close()
     #自动安装部署node等运行环境
     def resetEnv(self,ssh,outoNpmInstall):
         pm2path =  '/home/'+self.USERNAME+'/.npm-global/bin/pm2'
@@ -432,9 +432,9 @@ class AutoServ(object):
             self.logger.error(e)
             self.logger.error(self.hostfullName+" restart error")
         finally:
-            if not self.alive:
-                if self.ssh is not None:
-                    self.ssh.close()
+            #if not self.alive:
+            if self.ssh is not None:
+                self.ssh.close()
     #获取nodejs文件名字
     def getNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
