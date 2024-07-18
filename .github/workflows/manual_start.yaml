@@ -1,33 +1,37 @@
+name: manual start
+
 on:
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'
+      start_type:
+        description: '请选择启动方式'
         required: true
-        default: 'warning'
+        default: 'restart'
         type: choice
         options:
-        - info
-        - warning
-        - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-      environment:
-        description: 'Environment to run tests against'
-        type: environment
+          - restart
+          - reset
+          - keepalive
+      interval:
+        description: '请选择保活间隔时间(分钟)'
         required: true
-
+        default: '20'
+        type: choice
+        options:
+        - 20
+        - 30
+        - 40
+        - 50
+        - 60
+        
 jobs:
-  log-the-inputs:
+  job-inputs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "Log level: $LEVEL"
-          echo "Tags: $TAGS"
-          echo "Environment: $ENVIRONMENT"
+          echo "start_type: $START_TYPE"
+          echo "INTERVAL: $INTERVAL"
+          echo "ENV_CMD: py $START_TYPE $INTERVAL"
         env:
-          LEVEL: ${{ inputs.logLevel }}
-          TAGS: ${{ inputs.tags }}
-          ENVIRONMENT: ${{ inputs.environment }}
+          INTERVAL: ${{ inputs.interval }}
+          START_TYPE: ${{ inputs.start_type }}
