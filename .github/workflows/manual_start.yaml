@@ -25,17 +25,6 @@ on:
         - 60
         
 jobs:
-  job-inputs:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "start_type: $START_TYPE"
-          echo "INTERVAL: $INTERVAL"
-          echo "ENV_CMD: py $START_TYPE $INTERVAL"
-        env:
-          INTERVAL: ${{ inputs.interval }}
-          START_TYPE: ${{ inputs.start_type }}
-jobs:
   auto_restart:
     runs-on: ubuntu-latest
 
