@@ -23,9 +23,9 @@ on:
         - 40
         - 50
         - 60
-        
+
 jobs:
-  auto_restart:
+  manual_restart:
     runs-on: ubuntu-latest
 
     steps:
@@ -59,10 +59,10 @@ jobs:
         env:
           INTERVAL: ${{ inputs.interval }}
           START_TYPE: ${{ inputs.start_type }}
-          ENV_CMD: py ${{ inputs.start_type }} ${{ inputs.interval }}
       - name: 运行登录脚本
         env:
           USER_INFO: ${{ secrets.USER_INFO }}
           ENV_CONFIG: ${{ secrets.ENV_CONFIG }}
+          ENV_CMD: format('py {0} {1}', '${{ inputs.start_type }}', '${{ inputs.interval }}')
         run: |
           python login_auto_deploy.py
