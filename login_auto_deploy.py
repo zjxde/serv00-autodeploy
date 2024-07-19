@@ -106,11 +106,7 @@ class AutoServ(object):
                 self.CF_TOKEN = tgConfig['cf_token']
             if 'cf_username' in tgConfig:
                 self.CF_USERNAME = tgConfig['cf_username']
-        self.USE_CF = 0
-        if 'use_cf' in account and account['use_cf'] ==1:
-            self.USE_CF = 1
-            if self.CF_TOKEN:
-                self.logger(self.hostfullName+"set cf_token success")
+
 
 
 
@@ -176,8 +172,13 @@ class AutoServ(object):
                 self.portUidInfos.append(defaultPortUid)
 
 
-        self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
+        #self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
         self.hostfullName = self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
+        self.USE_CF = 0
+        if 'use_cf' in account and account['use_cf'] ==1:
+            self.USE_CF = 1
+            if self.CF_TOKEN:
+                self.logger(self.hostfullName+"set cf_token success")
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
