@@ -151,14 +151,19 @@ class CFServer(object):
                         port = rule['action_parameters']['origin']['port']
                         oldPorts.append(port)
                 newPorts = set.union(set(oldPorts), set(ports))
+                pp = set(ports)-set(oldPorts)
+                needUpdate = 1
+                if not pp:
+                    self.logger.info(f"{domain}:提供的新端口与旧端口一致,不操作")
+                    needUpdate = 0
                 if newPorts and len(newPorts)>=10:
                     self.logger.info(f"设置的端口已超过CF最大提供的10个，删除所有旧的端口，只保留最新的")
                     newPorts = ports
-                if newPorts and len(newPorts)>0:
+                if newPorts and len(newPorts)>0 and needUpdate:
                     res = self.updateRule(normalZoneId, domain, newPorts, des, None)
                     self.logger.info(f"{domain}:更新规则结果为:{res}")
-                else:
-                    self.logger.info(f"{domain}:提供的新端口与旧端口一致,不操作")
+
+
 
             else:
                 # 创建规则
