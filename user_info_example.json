@@ -4,7 +4,9 @@
     "tg_chat_id": "【tg chat id】",
     "send_tg": 1,
     "node_num": 2,
-    "usepm2": 0
+    "usepm2": 0,
+    "cf_token": "xxx",
+    "cf_username": "xxx"
   },
   "accounts": [
     {

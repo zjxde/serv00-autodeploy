@@ -14,6 +14,8 @@ import sys
 
 import requests
 from paramiko import SSHClient
+
+from cloudf import CFServer
 from serv import Serv00
 from logger import Mylogger
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -28,7 +30,7 @@ class AutoServ(object):
     def __init__(self, defaultConfig,account,tgConfig):
 
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
-        self.showNodeInfo = 0
+        self.showNodeInfo = 1
         if 'uuid_ports' in account and account['uuid_ports']:
             defaultConfig['uuid_ports'] = account['uuid_ports']
 
@@ -100,6 +102,15 @@ class AutoServ(object):
                 self.KILL_PID_PATH = tgConfig['kill_pid_path']
             if 'nodejs_name' in tgConfig:
                 self.NODEJS_NAME = tgConfig['nodejs_name']
+            if 'cf_token' in tgConfig:
+                self.CF_TOKEN = tgConfig['cf_token']
+            if 'cf_username' in tgConfig:
+                self.CF_USERNAME = tgConfig['cf_username']
+        self.USE_CF = 0
+        if 'use_cf' in account and account['use_cf'] ==1:
+            self.USE_CF = 1
+
+
 
         self.proxy = ''
         """
@@ -151,6 +162,7 @@ class AutoServ(object):
         self.logininfo = {}
         self.logininfo['username'] = self.USERNAME
         self.logininfo['password'] = self.PASSWORD
+        #初始化默认端口
         if 'uuid_ports' in defaultConfig:
             self.portUidInfos = defaultConfig['uuid_ports']
         else:
@@ -172,6 +184,9 @@ class AutoServ(object):
         self.runningPorts = []
         self.logger.info(self.hostfullName +" server init finish.................")
         self.initRes = 0
+        self.cfserver = None
+        self.CF_UPDATE = 0
+        self.CF_UPDATE_PORTS=[]
         #ftp = None
     # 获取远程ssh客户端链接
     def setSSHClient(self):
@@ -179,6 +194,7 @@ class AutoServ(object):
             self.ssh = self.getSshClient()
         if self.serv:
             self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
+
     def getSshClient(self):
         # SSHclient 实例化
         ssh: SSHClient = paramiko.SSHClient()
@@ -239,6 +255,9 @@ class AutoServ(object):
             self.logger.info(self.nodeHost+str(port))
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
+        if self.USE_CF:
+            self.CF_UPDATE_PORTS.append(port)
+            msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
         #异步发送节点链接到tg
         if self.SEND_TG:
             self.sendTgMsgSync(msg)
@@ -266,6 +285,7 @@ class AutoServ(object):
                 ftp = ssh.open_sftp()
                 self.killPid(ssh)
                 self.delNodejsFile(ssh)
+                self.CF_USERNAME = 1
             except Exception as e:
                 self.logger.error("connect is timeout or error")
 
@@ -460,7 +480,13 @@ class AutoServ(object):
                         continue
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
-                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                    if self.USE_CF:
+                        self.CF_UPDATE = 1
+                        self.CF_UPDATE_PORTS.append(int(port))
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+                    else:
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
                     else:
@@ -540,12 +566,17 @@ class AutoServ(object):
                     pids = res.split('\r\n')
 
                     if pids and len(pids) > 0 and pids[0]:
-                        self.logger.info(self.DOMAIN+"::"+self.USERNAME+"::"+str(pids[0]) +" is running")
+                        self.logger.info(self.HOSTNAME+str(port)+"::"+str(pids[0]) +" is running")
                         continue
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[port]
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+
+                    if self.USE_CF:
+                        self.CF_UPDATE_PORTS.append(port)
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
                     else:
@@ -671,18 +702,22 @@ if __name__ == "__main__":
                 uid = autoServ.hostfullName+str(autoServ.initRes)
                 autoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
+                #更新cf Origin Rules
+                with ThreadPoolExecutor(max_workers=5) as cfExecutor:
+                    if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
+                        cfExecutor.submit(CFServer.run,autoServ.DOMAIN,autoServ.CF_UPDATE_PORTS,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
+
                 if autoServ.alive == 1:
                     needSchedule = 1
             #print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
             if needSchedule:
                 AutoServ.sched.start()
-            """
-            results = []
+
             
             
             
-            """
+
 
 
 

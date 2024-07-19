@@ -54,7 +54,9 @@
     "tg_chat_id": "【tg chat id】",
     "send_tg": 1,
     "node_num": 2,
-    "usepm2": 0
+    "usepm2": 0,
+    "cf_token": "【cf_token】",
+    "cf_username": "【cf_登录用户名】"
   },
   "accounts": [
     {
@@ -63,7 +65,8 @@
       "domain": "【域名】",
       "pannelnum": 6,
       "cmd":"python reset 20",
-      "server_type": 1
+      "server_type": 1,
+      "use_cf": 1
     },
     {
       "username": "【用户名】",
@@ -71,7 +74,8 @@
       "domain": "【域名】",
       "pannelnum": 6,
       "cmd":"python reset 20",
-      "server_type": 1
+      "server_type": 1,
+      "use_cf": 1
     }
   ]
 }
@@ -103,14 +107,16 @@ py restart 20
 |send_tg|是否需要发送节点信息到telegram ,1:开启 0：不开启|
 |node_num|开启节点个数，由于节点serv00端口限制，最多可设3个，默认2个|
 |usepm2|是否开启pm2 1:开启 0：不开启 ,默认不开启, 比较耗资源建议不开启|
-|username|用户名|
-|password|密码|
-|domain|你申请的域名|
+|username|**用户名**|
+|password|**密码**|
+|domain|**你申请的域名**|
 |pannelnum|你申请机器号,如panel6.serv00.com就设置为6, CT8此项默认即可|
 |server_type|服务器类型 1: Serv00  2: CT8  ，默认为1|
-|cmd|reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟|
+|cmd|**reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟，若不加时间参数，则不会进行节点保活**|
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
 |tg_bot_token|申请tg机器人的token|
+|cf_token|cloudflare API 密钥 （**Global API Key**） https://dash.cloudflare.com/profile/api-tokens|
+|use_cf|是否开启CF CDN 1：开启 0：不开启|
 
 ## (四). 启动 GitHub Actions
 
