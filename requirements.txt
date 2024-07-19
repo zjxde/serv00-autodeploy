@@ -3,3 +3,4 @@ APScheduler==3.10.4
 lxml==5.2.2
 paramiko==3.4.0
 Requests==2.32.3
+jsonpath==0.82.2
