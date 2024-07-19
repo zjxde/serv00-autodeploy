@@ -1,6 +1,6 @@
 # Serv00与CT8自动化部署启动，保活，节点被删自动重新部署，发送节点消息到Telegram
 
-## 利用github Action以及python脚本实现，支持多个账号批量部署
+## 利用github Action以及python脚本实现，支持多个账号批量部署，自动开启CF CDN代理
 
 ## 🙏🙏🙏点个Star！！Star！！Star！！
 
