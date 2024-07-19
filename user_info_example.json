@@ -15,7 +15,8 @@
       "domain": "【域名】",
       "pannelnum": 6,
       "cmd":"python reset 20",
-      "server_type": 1
+      "server_type": 1,
+      "ip": "xxxxx"
     },
     {
       "username": "【用户名】",

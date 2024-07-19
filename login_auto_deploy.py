@@ -566,7 +566,7 @@ class AutoServ(object):
                     pids = res.split('\r\n')
 
                     if pids and len(pids) > 0 and pids[0]:
-                        self.logger.info(self.HOSTNAME+str(port)+"::"+str(pids[0]) +" is running")
+                        self.logger.info(self.hostfullName+str(port)+"::"+str(pids[0]) +" is running")
                         continue
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
