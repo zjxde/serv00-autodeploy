@@ -30,7 +30,7 @@ class AutoServ(object):
     def __init__(self, defaultConfig,account,tgConfig):
 
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
-        self.showNodeInfo = 1
+        self.showNodeInfo = 0
         if 'uuid_ports' in account and account['uuid_ports']:
             defaultConfig['uuid_ports'] = account['uuid_ports']
 
@@ -265,7 +265,7 @@ class AutoServ(object):
 
     def sendTgMsgSync(self,msg):
         if self.showNodeInfo:
-            self.logger.info(self.hostfullName,msg)
+            self.logger.info(self.hostfullName+msg)
         else:
             self.logger.info(self.hostfullName+"send tg msg start...")
         with ThreadPoolExecutor(max_workers=5) as executor:
