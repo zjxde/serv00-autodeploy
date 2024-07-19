@@ -678,7 +678,7 @@ if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
-    with open('user_info3.json', 'r') as f:
+    with open('user_info.json', 'r') as f:
         accounts = json.load(f)
     try:
         with open('env_config.json', 'r') as f:
