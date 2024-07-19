@@ -39,7 +39,9 @@ class AutoServ(object):
          #服务器编号 如 https://panel6.serv00.com/ 中的6
         self.PANNELNUM = account["pannelnum"]
         # server_type:1 serv00 2 ct8
+        self.SERVER_TYPE = 1
         if 'server_type' in account and account['server_type'] == 2:
+            self.SERVER_TYPE = 2
             self.HOSTNAME = 'panel.ct8.pl'
         else:
             self.HOSTNAME = 'panel' + str(self.PANNELNUM) + '.serv00.com'
@@ -51,7 +53,7 @@ class AutoServ(object):
         else:
             self.nodeHost = self.DOMAIN
         self.USERNAME = account["username"]
-        self.logger.info(self.DOMAIN +"::"+self.USERNAME +" run.................")
+        #self.logger.info(self.DOMAIN +"::"+self.USERNAME +" run.................")
         #密码
         self.PASSWORD = account["password"]
         # 根路径 默认以app命名
@@ -144,7 +146,7 @@ class AutoServ(object):
 
         self.logger.info("PANNELNUM is "+str(self.PANNELNUM))
         self.logger.info("USERNAME is "+self.USERNAME)
-        self.logger.info("BASEPATH is "+self.BASEPATH)
+        #self.logger.info("BASEPATH is "+self.BASEPATH)
         self.ssh = self.getSshClient()
         self.logininfo = {}
         self.logininfo['username'] = self.USERNAME
@@ -161,7 +163,7 @@ class AutoServ(object):
 
 
         self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
-        self.hostfullName = self.DOMAIN+"::"+self.USERNAME+"::"
+        self.hostfullName = self.USERNAME+"::"+str(self.SERVER_TYPE)+"::"
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
@@ -233,6 +235,8 @@ class AutoServ(object):
         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
         if self.showNodeInfo:
             self.logger.info("url is::"+msg)
+        else:
+            self.logger.info(self.nodeHost+str(port))
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
         #异步发送节点链接到tg
@@ -242,7 +246,7 @@ class AutoServ(object):
 
     def sendTgMsgSync(self,msg):
         if self.showNodeInfo:
-            self.logger.info(self.hostfullName+"send tg msg start...")
+            self.logger.info(self.hostfullName,msg)
         else:
             self.logger.info(self.hostfullName+"send tg msg start...")
         with ThreadPoolExecutor(max_workers=5) as executor:
@@ -459,6 +463,8 @@ class AutoServ(object):
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
+                    else:
+                        self.logger.info(self.hostfullName+str(port))
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
                     self.startCmd(templateName,port,self.ssh)
@@ -542,6 +548,8 @@ class AutoServ(object):
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
+                    else:
+                        self.logger.info(self.hostfullName+str(port))
                     self.startCmd(templateName,port,ssh)
 
             #time.sleep(waitTime)
@@ -607,7 +615,7 @@ class AutoServ(object):
                         logger.error("请输入如下命令：reset、restart、keepalive")
                         ssh.close()
                     if outoServ.alive:
-                        logger.info(outoServ.DOMAIN+"::"+outoServ.USERNAME+" keepalive interval for::"+str(waitTime))
+                        logger.info(outoServ.hostfullName+" keepalive interval for::"+str(waitTime))
                         AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
                         outoServ.initRes = 1
                         print(f"AutoServ.sched.state:{AutoServ.sched.state}")
@@ -625,7 +633,7 @@ class AutoServ(object):
         finally:
             if ssh:
                 ssh.close()
-        return account
+        return outoServ
 
 if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
@@ -646,6 +654,7 @@ if __name__ == "__main__":
     tgConfig = accounts['tg_config']
     #runservloop = asyncio.get_event_loop()
     #asyncio.run(runMain())
+    needSchedule = 0
     with ThreadPoolExecutor(max_workers=5) as executor:
         # 使用executor提交任务
         if myAccounts and len(myAccounts) > 0:
@@ -659,12 +668,15 @@ if __name__ == "__main__":
             for future in concurrent.futures.as_completed(future_results):
                 autoServ = future.result()
                 autoServ: AutoServ = future.result()
-                uid = autoServ.DOMAIN +"-"+autoServ.USERNAME+"-"+str(autoServ.initRes)
+                uid = autoServ.hostfullName+str(autoServ.initRes)
                 autoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
-            print(f"Task results: {results}")
+                if autoServ.alive == 1:
+                    needSchedule = 1
+            #print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
-            AutoServ.sched.start()
+            if needSchedule:
+                AutoServ.sched.start()
             """
             results = []
             
