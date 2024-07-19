@@ -156,7 +156,7 @@ class AutoServ(object):
         self.logger.info("PANNELNUM is "+str(self.PANNELNUM))
         self.logger.info("USERNAME is "+self.USERNAME)
         #self.logger.info("BASEPATH is "+self.BASEPATH)
-        self.ssh = self.getSshClient()
+
         self.logininfo = {}
         self.logininfo['username'] = self.USERNAME
         self.logininfo['password'] = self.PASSWORD
@@ -181,21 +181,25 @@ class AutoServ(object):
                 self.logger.info(self.hostfullName+"set cf_token success")
         self.uuidPorts = {}
         self.alive = 0
-        if not self.RESET:
-            self.getNodejsFile(self.ssh)
-
+        self.serv = None
         self.runningPorts = []
         self.logger.info(self.hostfullName +" server init finish.................")
         self.initRes = 0
         self.cfserver = None
         self.CF_UPDATE = 0
         self.CF_UPDATE_PORTS=[]
+        try:
+            self.ssh = self.getSshClient()
+            self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
+        except Exception as e:
+            self.logger.error(self.hostfullName+"ssh or serv timeout init error")
+
         #ftp = None
     # 获取远程ssh客户端链接
     def setSSHClient(self):
-        if self.ssh:
+        if not self.ssh:
             self.ssh = self.getSshClient()
-        if self.serv:
+        if not self.serv:
             self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
 
     def getSshClient(self):
@@ -602,7 +606,7 @@ class AutoServ(object):
         ssh = None
         outoServ = AutoServ(defaultConfig,account,tgConfig)
         try:
-            outoServ.setSSHClient()
+            #outoServ.setSSHClient()
             ssh = outoServ.ssh
             outoServ.logger.info(f"os cmd::{cmd}")
             if not cmd:# 如果github工作流使用命令 优先级最高
@@ -662,7 +666,7 @@ class AutoServ(object):
                 #account['res'] = "success"
                 return outoServ
         except Exception as e:
-            outoServ.logger.log(e)
+            outoServ.logger.error(e)
             #account['res'] = 'error'
             return outoServ
         finally:
@@ -674,7 +678,7 @@ if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
-    with open('user_info.json', 'r') as f:
+    with open('user_info3.json', 'r') as f:
         accounts = json.load(f)
     try:
         with open('env_config.json', 'r') as f:
@@ -708,7 +712,7 @@ if __name__ == "__main__":
                 results.append(uid)
                 #更新cf Origin Rules
                 with ThreadPoolExecutor(max_workers=5) as cfExecutor:
-                    autoServ.logger.info(autoServ.hostfullName+":"+autoServ.USE_CF+":"+len(autoServ.CF_UPDATE_PORTS))
+                    autoServ.logger.info(f"{autoServ.hostfullName}{autoServ.USE_CF}::{autoServ.CF_UPDATE_PORTS}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
                         cfExecutor.submit(CFServer.run,autoServ.DOMAIN,autoServ.CF_UPDATE_PORTS,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
 
