@@ -178,7 +178,7 @@ class AutoServ(object):
         if 'use_cf' in account and account['use_cf'] ==1:
             self.USE_CF = 1
             if self.CF_TOKEN:
-                self.logger(self.hostfullName+"set cf_token success")
+                self.logger.info(self.hostfullName+"set cf_token success")
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
