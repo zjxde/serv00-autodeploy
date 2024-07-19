@@ -109,6 +109,8 @@ class AutoServ(object):
         self.USE_CF = 0
         if 'use_cf' in account and account['use_cf'] ==1:
             self.USE_CF = 1
+            if self.CF_TOKEN:
+                self.logger(self.hostfullName+"set cf_token success")
 
 
 
@@ -285,7 +287,8 @@ class AutoServ(object):
                 ftp = ssh.open_sftp()
                 self.killPid(ssh)
                 self.delNodejsFile(ssh)
-                self.CF_USERNAME = 1
+                if self.USE_CF:
+                    self.CF_UPDATE = 1
             except Exception as e:
                 self.logger.error("connect is timeout or error")
 
@@ -704,6 +707,7 @@ if __name__ == "__main__":
                 results.append(uid)
                 #更新cf Origin Rules
                 with ThreadPoolExecutor(max_workers=5) as cfExecutor:
+                    autoServ.logger.info(autoServ.hostfullName+":"+autoServ.USE_CF+":"+len(autoServ.CF_UPDATE_PORTS))
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
                         cfExecutor.submit(CFServer.run,autoServ.DOMAIN,autoServ.CF_UPDATE_PORTS,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
 
