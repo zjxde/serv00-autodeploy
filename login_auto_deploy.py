@@ -163,7 +163,7 @@ class AutoServ(object):
 
 
         self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
-        self.hostfullName = self.USERNAME+"::"+str(self.SERVER_TYPE)+"::"
+        self.hostfullName = self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
