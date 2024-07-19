@@ -163,7 +163,7 @@ class AutoServ(object):
 
 
         self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
-        self.hostfullName = self.USERNAME+"::server_"+str(self.SERVER_TYPE)+"::"
+        self.hostfullName = self.USERNAME+"::"+str(self.SERVER_TYPE)+"::"
         self.uuidPorts = {}
         self.alive = 0
         if not self.RESET:
@@ -608,7 +608,7 @@ class AutoServ(object):
                         #AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
                         #AutoServ.sched.start()
                         #outoServ.keepAlive(waitTime)
-                    elif cmd =='keepalive':
+                    elif cmd1=='keepalive':
                         outoServ.alive = 1
                         logger.info("输入命令为：keepalive")
                     else:
@@ -639,7 +639,7 @@ if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
-    with open('user_info.json', 'r') as f:
+    with open('user_info2.json', 'r') as f:
         accounts = json.load(f)
     try:
         with open('env_config.json', 'r') as f:
