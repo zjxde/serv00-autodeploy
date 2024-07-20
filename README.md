@@ -117,6 +117,7 @@ py restart 20
 |tg_bot_token|申请tg机器人的token|
 |cf_token|cloudflare API 密钥 （**Global API Key**） https://dash.cloudflare.com/profile/api-tokens|
 |use_cf|是否开启CF CDN 1：开启 0：不开启|
+|is_first|**是否首次部署 1：是， 0：不是 注此操作会帮域名绑定ip，申请证书，只限机器首次部署操作，后面启动配置要改成0**|
 
 ## (四). 启动 GitHub Actions
 

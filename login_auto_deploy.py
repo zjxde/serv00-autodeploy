@@ -179,6 +179,10 @@ class AutoServ(object):
             self.USE_CF = 1
             if self.CF_TOKEN:
                 self.logger.info(self.hostfullName+"set cf_token success")
+        #是否第一次布署
+        self.IS_FIRST = 0
+        if 'is_first' in account and account['is_first'] == 1:
+            self.IS_FIRST = 1
         self.uuidPorts = {}
         self.alive = 0
         self.serv = None
@@ -188,6 +192,10 @@ class AutoServ(object):
         self.cfserver = None
         self.CF_UPDATE = 0
         self.CF_UPDATE_PORTS=[]
+        self.SSL_DOMAINS=[self.DOMAIN]
+        if 'ssl_domains' in account:
+            self.SSL_DOMAINS = account["ssl_domains"].split(",")
+
         try:
             self.ssh = self.getSshClient()
             self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
@@ -290,6 +298,7 @@ class AutoServ(object):
             try:
                 ssh = self.getSshClient()
                 ftp = ssh.open_sftp()
+                serv = self.serv
                 self.killPid(ssh)
                 self.delNodejsFile(ssh)
                 if self.USE_CF:
@@ -300,7 +309,7 @@ class AutoServ(object):
             if self.RESET:
                 self.resetEnv(ssh,self.OUTO_NPM_INSTALL)
             # 从serv00服务器删除原有端口，自动获取端口
-            serv = self.serv
+
             ports = serv.getloginPorts()
             #杀掉现有节点pid，重新申请端口，自动部署
             uuidPorts = self.uuidPorts
@@ -317,6 +326,9 @@ class AutoServ(object):
                 serv.addport(None)
 
             ports = serv.getports();
+            #首次部署帮开通权限，申请端口
+            if self.IS_FIRST:
+                serv.runMain([self.SSL_DOMAINS],ports[:min(self.NODE_NUM, 2)])
             i = 0
             for data in self.portUidInfos:
                 UUID = data['uuid']
