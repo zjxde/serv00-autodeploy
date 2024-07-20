@@ -496,7 +496,7 @@ class AutoServ(object):
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
                         self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
-                        self.main()
+                        self.forceConfig()
                         continue
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
@@ -540,12 +540,12 @@ class AutoServ(object):
                     self.uuidPorts[port] = uuid
         else:
             msg = self.hostfullName+"not find nodejs file,regenerate "
+            self.logger.info(msg)
             if self.SEND_TG:
                 self.sendTgMsgSync(msg)
-            self.logger.info(msg)
-            self.RESET = 0
-            self.main()
-            self.logger.info(msg)
+
+            self.forceConfig()
+
     def delNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
         cmd = "ls "+pidfullpath +" | grep 'index_.*.js'"
@@ -574,7 +574,7 @@ class AutoServ(object):
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
                         self.logger.info(str(port)+" is not auto create ,continue")
-                        self.main()
+                        self.forceConfig()
                         if self.SEND_TG:
                             msg = self.hostfullName+"重新创建部署节点ok，请重新到TG复制最新的节点信息"
                             self.sendTgMsgSync(msg)
@@ -612,6 +612,11 @@ class AutoServ(object):
         finally:
             if self.ssh is not None:
                 self.ssh.close()
+    #重启，保活，非首次部署不进行重置，申请证书操作
+    def forceConfig(self):
+        self.IS_FIRST = 0
+        self.RESET = 0
+        self.main()
 
     @staticmethod
     def runAcount(defaultConfig,tgConfig,account,cmd):
