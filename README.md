@@ -1,6 +1,6 @@
 # Serv00与CT8自动化部署启动，保活，节点被删自动重新部署，发送节点消息到Telegram
 
-## 利用github Action以及python脚本实现，支持多个账号批量部署，自动开启CF CDN代理
+## 利用github Action以及python脚本实现，支持多个账号批量部署，可开启CF CDN代理
 
 ## 🙏🙏🙏点个Star！！Star！！Star！！
 
@@ -66,7 +66,7 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 1
+      "use_cf": 0
     },
     {
       "username": "【用户名】",
@@ -75,7 +75,7 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 1
+      "use_cf": 0
     }
   ]
 }
