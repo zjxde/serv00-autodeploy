@@ -588,11 +588,19 @@ class AutoServ(object):
                     if pids and len(pids) > 0 and pids[0]:
                         self.logger.info(self.hostfullName+str(port)+"::"+str(pids[0]) +" is running")
                         continue
+                    #双重判断 通过进程判断 防止重复启动
+                    cmd = 'pgrep -f '+self.KILL_PID_PATH
+                    pids,stdin,stdout, stderr = self.executeNewCmd(ssh,cmd,5)
+                    if pids and len(pids)>0:
+                        pidlist = list(filter(bool, pids))
+                        if len(pidlist) == len(self.uuidPorts):
+                            self.logger.info(f"{self.hostfullName} {pidlist} is running")
+                            continue
+                    self.logger.info(self.hostfullName+" nodes keepalive restart.....")
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[port]
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
-
                     if self.USE_CF:
                         self.CF_UPDATE_PORTS.append(port)
                         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
