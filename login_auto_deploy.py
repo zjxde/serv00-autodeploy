@@ -205,9 +205,7 @@ class AutoServ(object):
         #ftp = None
     # 获取远程ssh客户端链接
     def setSSHClient(self):
-        if not self.ssh:
             self.ssh = self.getSshClient()
-        if not self.serv:
             self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
 
     def getSshClient(self):
@@ -622,6 +620,7 @@ class AutoServ(object):
         finally:
             if self.ssh is not None:
                 self.ssh.close()
+
     #重启，保活，非首次部署不进行重置，申请证书操作
     def forceConfig(self):
         self.IS_FIRST = 0
@@ -690,6 +689,7 @@ class AutoServ(object):
                     print(e)
                     logger.error(e)
                     ssh.close()
+                    ssh=None
                 #account['res'] = "success"
                 return outoServ
         except Exception as e:
