@@ -111,7 +111,7 @@ py restart 20
 |usepm2|是否开启pm2 1:开启 0：不开启 ,默认不开启, 比较耗资源建议不开启|
 |username|**用户名**|
 |password|**密码**|
-|domain|**你申请的域名**|
+|domain|**你申请的域名，如CF绑定的域名**|
 |pannelnum|你申请机器号,如panel6.serv00.com就设置为6, CT8此项默认即可|
 |server_type|服务器类型 1: Serv00  2: CT8  ，默认为1|
 |cmd|**reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟，若不加时间参数，则不会进行节点保活**|
