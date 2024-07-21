@@ -559,9 +559,11 @@ class AutoServ(object):
                     self.executeNewCmd(ssh,delcmd,10)
     #保活
     def keepAlive(self):
-        self.ssh = self.getSshClient()
-        self.getNodejsFile(self.ssh)
+        #self.ssh = self.getSshClient()
+
         try:
+            self.setSSHClient()
+            self.getNodejsFile(self.ssh)
             ports = None
             if self.runningPorts:
                 ports = self.runningPorts
