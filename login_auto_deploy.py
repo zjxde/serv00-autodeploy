@@ -569,7 +569,7 @@ class AutoServ(object):
                 ports = self.serv.getloginPorts()
             ssh = self.ssh
             if ports and len(ports) > 0:
-                if len(ports) >=3:
+                if len(ports) >=min(len(ports),3):
                     self.runningPorts = ports
                 for index,port in enumerate(ports):
                     if port not in self.uuidPorts:
