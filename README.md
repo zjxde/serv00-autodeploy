@@ -66,7 +66,8 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 0
+      "use_cf": 0,
+      "is_first": 0
     },
     {
       "username": "【用户名】",
@@ -75,7 +76,8 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 0
+      "use_cf": 0,
+      "is_first": 0
     }
   ]
 }
