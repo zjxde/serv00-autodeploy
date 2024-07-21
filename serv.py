@@ -247,7 +247,7 @@ class Serv00(object):
         if ports and len(ports)>0:
             results = []
             ip_nums,ips,nums = serv.getSSLWebsites()
-            serv00.logger.info(f"get ips : {ips} nums:{nums}")
+            serv.logger.info(f"get ips : {ips} nums:{nums}")
             if ips and len(ips)>0:
                 for index, ip in enumerate(ips):
                     if ip_nums[ip] == '0':
@@ -256,7 +256,7 @@ class Serv00(object):
                         #websites = serv.getWebsites()
                         res = serv.addWebsite(domain, ports[index])
                         if res and res == domain:
-                            serv00.logger.info(f"{domain} add ssl certificate start,please waiting...")
+                            serv.logger.info(f"{domain} add ssl certificate start,please waiting...")
                             #申请证书
                             res = serv.addSertificate(ips[index], domain)
                             if res and res == domain:
