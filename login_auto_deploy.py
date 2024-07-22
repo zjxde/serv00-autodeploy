@@ -335,7 +335,7 @@ class AutoServ(object):
             ports = serv.getports();
             #首次部署帮开通权限，申请端口
             if self.IS_FIRST:
-                serv.runMain([self.SSL_DOMAINS],ports[:min(self.NODE_NUM, 2)])
+                serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)])
             i = 0
             for data in self.portUidInfos:
                 UUID = data['uuid']
