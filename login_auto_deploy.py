@@ -174,7 +174,7 @@ class AutoServ(object):
 
 
         #self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
-        self.hostfullName = self.currentTime+"::"+self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
+        self.hostfullName = self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
         self.USE_CF = 0
         if 'use_cf' in account and account['use_cf'] ==1:
             self.USE_CF = 1
