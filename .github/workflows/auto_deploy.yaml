@@ -3,7 +3,7 @@ name: auto deploy
 on:
   push:
     branches:
-      - main
+      - release
     paths-ignore:
       - 'README.md'
       - 'user_info_example.json'
