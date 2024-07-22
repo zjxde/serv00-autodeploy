@@ -688,7 +688,7 @@ class AutoServ(object):
                         logger.info(outoServ.hostfullName+" keepalive interval for::"+str(waitTime))
                         AutoServ.sched.add_job(outoServ.keepAlive,'interval', minutes=waitTime)
                         outoServ.initRes = 1
-                        print(f"AutoServ.sched.state:{AutoServ.sched.state}")
+                        outoServ.logger.info(f"AutoServ.sched.state:{AutoServ.sched.state}")
 
                 except Exception as e:
                     print(e)
@@ -723,7 +723,6 @@ if __name__ == "__main__":
     tgConfig = accounts['tg_config']
     #runservloop = asyncio.get_event_loop()
     #asyncio.run(runMain())
-    needSchedule = 0
     with ThreadPoolExecutor(max_workers=5) as executor:
         # 使用executor提交任务
         if myAccounts and len(myAccounts) > 0:
@@ -734,23 +733,21 @@ if __name__ == "__main__":
                 #break
                 pass
             results=[]
+            needSchedules = []
             for future in concurrent.futures.as_completed(future_results):
                 autoServ = future.result()
                 autoServ: AutoServ = future.result()
                 uid = autoServ.hostfullName+str(autoServ.initRes)
                 autoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
+                needSchedules.append(autoServ.alive)
                 #更新cf Origin Rules
                 with ThreadPoolExecutor(max_workers=5) as cfExecutor:
                     autoServ.logger.info(f"{autoServ.hostfullName}{autoServ.USE_CF}::{autoServ.CF_UPDATE_PORTS}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
                         cfExecutor.submit(CFServer.run,autoServ.DOMAIN,autoServ.CF_UPDATE_PORTS,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
-
-                if autoServ.alive == 1:
-                    needSchedule = 1
-            #print(f"Task results: {results}")
             print(f"sched::{AutoServ.sched.state}")
-            if needSchedule:
+            if 1 in needSchedules:
                 AutoServ.sched.start()
 
             
