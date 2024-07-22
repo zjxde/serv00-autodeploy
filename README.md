@@ -1,6 +1,6 @@
 # Serv00与CT8自动化部署启动，保活，节点被删自动重新部署，发送节点消息到Telegram
 
-## 利用github Action以及python脚本实现，支持多个账号批量部署，可开启CF CDN代理,首次部署自动绑定ip,生成证书
+## 利用github Action以及python脚本实现，支持多个账号批量部署，首次部署自动绑定ip,生成证书
 
 ## 🙏🙏🙏点个Star！！Star！！Star！！
 
@@ -56,9 +56,7 @@
     "tg_chat_id": "tg chat id",
     "send_tg": 1,
     "node_num": 2,
-    "usepm2": 0,
-    "cf_token": "cf_token",
-    "cf_username": "cf_username"
+    "usepm2": 0
   },
   "accounts": [
     {
@@ -68,7 +66,6 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 0,
       "is_first": 0
     },
     {
@@ -78,7 +75,6 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 0,
       "is_first": 0
     }
   ]
@@ -120,9 +116,6 @@ py restart 20
 |cmd|**reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟，若不加时间参数，则不会进行节点保活**|
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
 |tg_bot_token|申请tg机器人的token|
-|cf_username|cloudflare 用户名 当use_cf=0此项默认即可|
-|cf_token|cloudflare API 密钥 （**Global API Key**） https://dash.cloudflare.com/profile/api-tokens ，当use_cf=0此项默认即可|
-|use_cf|是否开启CF CDN 1：开启 0：不开启|
 |is_first|**是否首次部署 1：是， 0：不是 注此操作会帮域名绑定ip，申请证书，只限机器首次部署操作，后面启动配置要改成0**|
 
 ## (四). 启动 GitHub Actions
