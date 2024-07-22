@@ -142,7 +142,7 @@ py restart 20
 
 ### 操作步骤说明
 
-![github_opt.png](attachment:51309f9fe7a059fa76e538bbafa829c5)
+![执行action](github_opt.png)
 
 <br/>
 
