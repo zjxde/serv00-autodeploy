@@ -184,6 +184,9 @@ class AutoServ(object):
                 self.CF_USERNAME = tgConfig['cf_username']
             if self.CF_TOKEN:
                 self.logger.info(self.hostfullName+"set cf_token success")
+        if 'reset' in account and account['reset'] == 1:
+            self.RESET = 1
+            self.OUTO_NPM_INSTALL = 1
         #是否第一次布署
         self.IS_FIRST = 0
         if 'is_first' in account and account['is_first'] == 1:
