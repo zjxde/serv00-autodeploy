@@ -16,6 +16,7 @@ import requests
 from paramiko import SSHClient
 
 from cloudf import CFServer
+from dates import DateUtils
 from serv import Serv00
 from logger import Mylogger
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -28,7 +29,7 @@ class AutoServ(object):
 
     sched = BlockingScheduler()
     def __init__(self, defaultConfig,account,tgConfig):
-        self.currentTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        self.currentTime = DateUtils.dateOperations(timedelta_kwargs={"hours": 8})
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
         self.showNodeInfo = 0
         if 'uuid_ports' in account and account['uuid_ports']:
