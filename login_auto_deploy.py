@@ -231,7 +231,8 @@ class AutoServ(object):
         )
 
         return ssh
-
+    def getCurrentTime(self):
+        return DateUtils.dateOperations(timedelta_kwargs={"hours": 8})
     # 自动执行 启动节点
     def execute(self, ssh, sftp_client, myuuid, port):
         global  ftp, data, file,ouuid
@@ -591,7 +592,7 @@ class AutoServ(object):
                     pids = res.split('\r\n')
 
                     if pids and len(pids) > 0 and pids[0]:
-                        self.logger.info(self.hostfullName+str(port)+"::"+str(pids[0]) +" is running")
+                        self.logger.info(self.getCurrentTime()+":"+self.hostfullName+str(port)+"::"+str(pids[0]) +" is running")
                         continue
                     #双重判断 通过进程判断 防止重复启动
                     cmd = 'pgrep -f '+self.KILL_PID_PATH
