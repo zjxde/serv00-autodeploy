@@ -14,8 +14,6 @@ import sys
 
 import requests
 from paramiko import SSHClient
-
-from cloudf import CFServer
 from dates import DateUtils
 from serv import Serv00
 from logger import Mylogger
