@@ -50,13 +50,13 @@
 ```json
 {
   "tg_config": {
-    "tg_bot_token": "【tg token】",
-    "tg_chat_id": "【tg chat id】",
+    "tg_bot_token": "tg token",
+    "tg_chat_id": "tg chat id",
     "send_tg": 1,
     "node_num": 2,
     "usepm2": 0,
-    "cf_token": "【cf_token】",
-    "cf_username": "【cf_登录用户名】"
+    "cf_token": "cf_token",
+    "cf_username": "cf_username"
   },
   "accounts": [
     {
