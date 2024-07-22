@@ -27,7 +27,8 @@
 ## (三). 配置 GitHub Secrets
 
 **1、Setting->Secrets->actions 添加secrets名称：ENV_CONFIG**<br>
-    (注：此项可直接复制下面的内容配置即可)
+(注：此项可直接复制下面的内容配置即可)
+
 ```json
 {
   "env_config": {
@@ -41,7 +42,8 @@
 ```
 
 **2、Setting->Secrets->actions 添加secrets名称：USER_INFO**
-    检验配置内容是否json格式有效地址：https://www.bejson.com/explore/index_new/
+检验配置内容是否json格式有效地址：https://www.bejson.com/explore/index_new/
+
 ```
 (注：此项参数中括号只是配置说明，需要修改成你自己的) 
 配置格式为json格式：{"tg_config"{你的配置},accounts:[{账号一配置},{账号二配置},......]}
@@ -83,7 +85,8 @@
 }
 
 ```
-**3、Setting->Secrets->actions 添加secrets名称：ENV_CMD,值复制下面内容** 
+
+**3、Setting->Secrets->actions 添加secrets名称：ENV_CMD,值复制下面内容**
 
 ```
 py restart 20
@@ -105,7 +108,7 @@ py restart 20
 
 |参数名称|参数说明|
 |--|--|
-|tg_chat_id|Chat ID|
+|tg_chat_id|Chat ID  当send_tg=0此项默认即可|
 |send_tg|是否需要发送节点信息到telegram ,1:开启 0：不开启|
 |node_num|开启节点个数，由于节点serv00端口限制，最多可设3个，默认2个|
 |usepm2|是否开启pm2 1:开启 0：不开启 ,默认不开启, 比较耗资源建议不开启|
@@ -117,7 +120,8 @@ py restart 20
 |cmd|**reset:重新安装节点 ,keepalive:保活 ,restart:只重启 ,三种模式后面参数都可跟保活间隔时间 ,单位为分钟 如： python restart 20 ,就表示重启并保活 时间设置为20分钟，若不加时间参数，则不会进行节点保活**|
 |basepath|节点部署目录：默认 /home/XXX[用户名]/domains/XXX[域名]/app2/serv00-ws/|
 |tg_bot_token|申请tg机器人的token|
-|cf_token|cloudflare API 密钥 （**Global API Key**） https://dash.cloudflare.com/profile/api-tokens|
+|cf_username|cloudflare 用户名 当use_cf=0此项默认即可|
+|cf_token|cloudflare API 密钥 （**Global API Key**） https://dash.cloudflare.com/profile/api-tokens ，当use_cf=0此项默认即可|
 |use_cf|是否开启CF CDN 1：开启 0：不开启|
 |is_first|**是否首次部署 1：是， 0：不是 注此操作会帮域名绑定ip，申请证书，只限机器首次部署操作，后面启动配置要改成0**|
 
@@ -135,6 +139,12 @@ py restart 20
     auto_restart.yaml : 可自定义命令重启服务器 注使用该使用需要手动配置 secrets 名称为 ENV_CMD，值为 py restart 10【推荐】 ，后面
     的数值可按自己需求自行修改( 参数说明：reset:重新初始化环境 keepalive:保活 restart:只重启 三种模式后面参数都可跟保活间隔时间，单位为分钟)
 ```
+
+### 操作步骤说明
+
+![github_opt.png](attachment:51309f9fe7a059fa76e538bbafa829c5)
+
+<br/>
 
 ## (五).注意事项
 
