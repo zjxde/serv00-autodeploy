@@ -132,6 +132,7 @@ class CFServer(object):
                                 normalZoneId = zoneId
                                 break
                             else:
+                                isNormal = 1
                                 self.logger.info(domain + "::未开启dns代理，请务必先配置")
                         #else:
                             #self.logger.info(recordName + "::未配置域名dns记录，请务必先配置")
