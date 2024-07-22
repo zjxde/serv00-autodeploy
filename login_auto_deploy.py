@@ -28,7 +28,7 @@ class AutoServ(object):
 
     sched = BlockingScheduler()
     def __init__(self, defaultConfig,account,tgConfig):
-
+        self.currentTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.logger = Mylogger.getCommonLogger("app.log",logging.INFO,1)
         self.showNodeInfo = 0
         if 'uuid_ports' in account and account['uuid_ports']:
@@ -78,11 +78,13 @@ class AutoServ(object):
         #tgConfig = userInfo['tg_config']
         self.NODEJS_NAME = envConfig['nodejs_name']
         if tgConfig:
-            self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
-            self.TG_CHAT_ID = tgConfig['tg_chat_id']
+
             self.SEND_TG = tgConfig['send_tg']
             self.USE_PM2 = tgConfig['usepm2']
             self.NODE_NUM = tgConfig['node_num']
+            if self.SEND_TG:
+                self.TG_BOT_TOKEN = tgConfig['tg_bot_token']
+                self.TG_CHAT_ID = tgConfig['tg_chat_id']
             if 'timeout' in tgConfig:
                 self.TIMEOUT = tgConfig['timeout']
             else:
@@ -102,10 +104,8 @@ class AutoServ(object):
                 self.KILL_PID_PATH = tgConfig['kill_pid_path']
             if 'nodejs_name' in tgConfig:
                 self.NODEJS_NAME = tgConfig['nodejs_name']
-            if 'cf_token' in tgConfig:
-                self.CF_TOKEN = tgConfig['cf_token']
-            if 'cf_username' in tgConfig:
-                self.CF_USERNAME = tgConfig['cf_username']
+
+
 
 
 
@@ -173,10 +173,14 @@ class AutoServ(object):
 
 
         #self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
-        self.hostfullName = self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
+        self.hostfullName = self.currentTime+"::"+self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
         self.USE_CF = 0
         if 'use_cf' in account and account['use_cf'] ==1:
             self.USE_CF = 1
+            if 'cf_token' in tgConfig:
+                self.CF_TOKEN = tgConfig['cf_token']
+            if 'cf_username' in tgConfig:
+                self.CF_USERNAME = tgConfig['cf_username']
             if self.CF_TOKEN:
                 self.logger.info(self.hostfullName+"set cf_token success")
         #是否第一次布署
@@ -690,11 +694,9 @@ class AutoServ(object):
                     logger.error(e)
                     ssh.close()
                     ssh=None
-                #account['res'] = "success"
                 return outoServ
         except Exception as e:
             outoServ.logger.error(e)
-            #account['res'] = 'error'
             return outoServ
         finally:
             if ssh:
