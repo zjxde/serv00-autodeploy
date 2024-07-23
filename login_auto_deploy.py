@@ -645,6 +645,9 @@ class AutoServ(object):
             if not cmd:# 如果github工作流使用命令 优先级最高
                 cmd = account['cmd']
             args = cmd.split()
+            #不需要保活
+            if '0' in args:
+                args=[x for x in args if x!= '0']
             logger = outoServ.logger;
             logger.info("cmd::"+cmd)
             if args and len(args) ==2:
@@ -670,6 +673,7 @@ class AutoServ(object):
                 logger.info("cmd::"+cmd)
                 try:
                     waitTime = int(cmd2)
+                    #手动启动不活
                     if cmd1 == 'reset':
                         outoServ.alive = 1
                         outoServ.main()
