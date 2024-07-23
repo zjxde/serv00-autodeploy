@@ -144,6 +144,7 @@ class Serv00(object):
         resp = self.session.post(self.addWebsiteUrl,data=data,headers = headers)
         #print(resp.text)
         if resp and resp.status_code == 200:
+            self.logger.info(f"{domain} addWebsite success {resp.status_code}")
             return domain
         else:
             self.logger.info(f"{domain} addWebsite erro {resp.status_code}")
@@ -199,9 +200,30 @@ class Serv00(object):
         resp = self.session.post(url, data=data, headers=headers)
         #print(resp.text)
         if resp and resp.status_code == 200:
+            self.logger.info(f"addSertificate success {resp.status_code}")
             return domain
         else:
             self.logger.info(f"{domain} addSertificate erro {resp.status_code}")
+            return 0
+
+    #自动添加证书
+    def delSertificate(self,domain):
+        url = self.getWebsitesUrl
+        headers = self.headers
+        headers['Referer'] = self.getReferer(self.getWebsitesUrl)
+        data = {}
+        data['csrfmiddlewaretoken'] = self.getWebsiteToken()
+        #//*[@id="id_domain"]
+        data['del_domain'] = domain
+        data['del_files'] = ''
+        data['del_dns'] = 'on'
+        resp = self.session.post(url, data=data, headers=headers)
+        #print(resp.text)
+        if resp and resp.status_code == 200:
+            self.logger.info(f"{domain} delSertificate success")
+            return domain
+        else:
+            self.logger.info(f"{domain} delSertificate erro {resp.status_code}")
             return 0
     #查询是否开启app权限
     def runAppPermission(self):
@@ -233,12 +255,13 @@ class Serv00(object):
             data['action'] = 'on'
             resp = self.session.post(url, data=data, headers=headers)
             if resp and resp.status_code == 200:
+                self.logger.info(f"enableAppPermission success {resp.status_code}")
                 return 1
             else:
                 self.logger.info(f"enableAppPermission erro {resp.status_code}")
             return 0
    #处理主方法
-    def runMain(self,domains,ports):
+    def runMain(self,domains,ports,isForce):
         #serv = Serv00(pannelnum,logininfo,hostname)
         serv = self
         enableRes = serv.enableAppPermission()
@@ -250,8 +273,9 @@ class Serv00(object):
             serv.logger.info(f"get ips : {ips} nums:{nums}")
             if ips and len(ips)>0:
                 for index, ip in enumerate(ips):
-                    if ip_nums[ip] == '0':
+                    if ip_nums[ip] == '0' or isForce:
                         domain = domains[index]
+                        serv.delSertificate(domain)
                         #绑定proxy端口
                         #websites = serv.getWebsites()
                         res = serv.addWebsite(domain, ports[index])
@@ -286,7 +310,7 @@ if __name__ == '__main__':
             else:
                 HOSTNAME = 'panel' + str(pannelnum) + '.serv00.com'
             serv00 = Serv00(pannelnum,logininfo,HOSTNAME)
-            serv00.getWebsites()
+            serv00.delSertificate("junjie2.junx888.us.kg")
             #serv00.runMain(["junx123.cloudns.ch","vl.junx888.us.kg"],[8006,8007])
             #serv00.runAppPermission()
             #serv00.enableAppPermission()

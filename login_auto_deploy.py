@@ -78,6 +78,7 @@ class AutoServ(object):
         self.KILL_PID_PATH = envConfig['kill_pid_path']
         #tgConfig = userInfo['tg_config']
         self.NODEJS_NAME = envConfig['nodejs_name']
+        self.DEL_SSL = 0
         if tgConfig:
 
             self.SEND_TG = tgConfig['send_tg']
@@ -105,6 +106,8 @@ class AutoServ(object):
                 self.KILL_PID_PATH = tgConfig['kill_pid_path']
             if 'nodejs_name' in tgConfig:
                 self.NODEJS_NAME = tgConfig['nodejs_name']
+            if 'del_ssl' in tgConfig:
+                self.DEL_SSL = tgConfig['del_ssl']
 
 
 
@@ -187,6 +190,9 @@ class AutoServ(object):
         if 'reset' in account and account['reset'] == 1:
             self.RESET = 1
             self.OUTO_NPM_INSTALL = 1
+
+        if 'del_ssl' in account and account['del_ssl'] == 1:
+            self.DEL_SSL = 1
         #是否第一次布署
         self.IS_FIRST = 0
         if 'is_first' in account and account['is_first'] == 1:
@@ -335,7 +341,7 @@ class AutoServ(object):
             ports = serv.getports();
             #首次部署帮开通权限，申请端口
             if self.IS_FIRST:
-                serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)])
+                serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)],self.DEL_SSL)
             i = 0
             for data in self.portUidInfos:
                 UUID = data['uuid']
