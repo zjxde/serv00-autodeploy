@@ -178,3 +178,4 @@ class CFServer(object):
 
 if __name__ == '__main__':
     print("=============")
+    CFServer.run("junjie.junx888.us.kg",[48028,62313],'zjxdede3@126.com','b019f3f0f29df637e9196e8c3c0a0e5d7b232')

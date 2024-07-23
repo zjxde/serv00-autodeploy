@@ -282,6 +282,8 @@ class AutoServ(object):
         else:
             self.logger.info(self.nodeHost+str(port))
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
+        if self.USE_CF:
+            self.CF_UPDATE_PORTS.append(port)
         self.startCmd(templateName,port,ssh)
         if self.USE_CF:
             self.CF_UPDATE_PORTS.append(port)
@@ -342,6 +344,7 @@ class AutoServ(object):
             #首次部署帮开通权限，申请端口
             if self.IS_FIRST:
                 serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)],self.DEL_SSL)
+
             i = 0
             for data in self.portUidInfos:
                 UUID = data['uuid']
