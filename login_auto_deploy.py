@@ -14,6 +14,8 @@ import sys
 
 import requests
 from paramiko import SSHClient
+
+from cloudf import CFServer
 from dates import DateUtils
 from serv import Serv00
 from logger import Mylogger
@@ -747,6 +749,11 @@ if __name__ == "__main__":
                 autoServ.logger.info(f"Task result: {uid}")
                 results.append(uid)
                 needSchedules.append(autoServ.alive)
+                #更新cf Origin Rules
+                with ThreadPoolExecutor(max_workers=5) as cfExecutor:
+                    autoServ.logger.info(f"{autoServ.hostfullName}{autoServ.USE_CF}::{autoServ.CF_UPDATE_PORTS}")
+                    if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
+                        cfExecutor.submit(CFServer.run,autoServ.DOMAIN,autoServ.CF_UPDATE_PORTS,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
                 #更新cf Origin Rules
             print(f"sched::{AutoServ.sched.state}")
             if 1 in needSchedules:
