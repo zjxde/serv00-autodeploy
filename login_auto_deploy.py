@@ -292,7 +292,7 @@ class AutoServ(object):
         self.startCmd(templateName,port,ssh)
         if self.USE_CF:
             self.CF_UPDATE_PORTS.append(port)
-            msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+            msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
         #异步发送节点链接到tg
         if self.SEND_TG:
             self.sendTgMsgSync(msg)
