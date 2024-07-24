@@ -210,7 +210,9 @@ class AutoServ(object):
         if 'ssl_domains' in account:
             self.SSL_DOMAINS = account["ssl_domains"].split(",")
         else:
-            self.SSL_DOMAINS = [self.DOMAIN]
+            self.SSL_DOMAINS = []
+            for i in range(min(self.NODE_NUM,3)):
+                self.SSL_DOMAINS.append(self.DOMAIN)
 
         try:
             self.ssh = self.getSshClient()
@@ -245,7 +247,7 @@ class AutoServ(object):
     def getCurrentTime(self):
         return DateUtils.dateOperations(timedelta_kwargs={"hours": 8})
     # 自动执行 启动节点
-    def execute(self, ssh, sftp_client, myuuid, port):
+    def execute(self, ssh, sftp_client, myuuid, port,index):
         global  ftp, data, file,ouuid
         if port is not None and port == 0:
             self.logger.info('not set port ,will genate random')
@@ -278,7 +280,8 @@ class AutoServ(object):
         file = sftp_client.file(templateName, "a", -1)
         file.write(newcontent)
         file.flush()
-        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+        self.nodeHost = self.SSL_DOMAINS[index]
+        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
         if self.showNodeInfo:
             self.logger.info("url is::"+msg)
         else:
@@ -348,13 +351,13 @@ class AutoServ(object):
                 serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)],self.DEL_SSL)
 
             i = 0
-            for data in self.portUidInfos:
+            for index,data in enumerate(self.portUidInfos):
                 UUID = data['uuid']
                 port = data['port']
                 if(port == 0):
                     port = ports[i]
 
-                self.execute(ssh, ftp, UUID, port)
+                self.execute(ssh, ftp, UUID, port,index)
                 if len(uuidPorts) > 0:
                     if port not in uuidPorts:
                         uuidPorts[port] = UUID
@@ -516,14 +519,15 @@ class AutoServ(object):
                         self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
                         self.forceConfig()
                         continue
+                    self.nodeHost = self.SSL_DOMAINS[index]
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
                     if self.USE_CF:
                         self.CF_UPDATE = 1
                         self.CF_UPDATE_PORTS.append(int(port))
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
                     else:
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
 
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
@@ -617,13 +621,14 @@ class AutoServ(object):
                             self.logger.info(f"{self.hostfullName} {pidlist} is running")
                             continue
                     self.logger.info(self.hostfullName+" nodes keepalive restart.....")
+                    self.nodeHost = self.SSL_DOMAINS[index]
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[port]
-                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     if self.USE_CF:
                         self.CF_UPDATE_PORTS.append(port)
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.DOMAIN+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
 
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
@@ -722,6 +727,10 @@ class AutoServ(object):
             if ssh:
                 ssh.close()
         return outoServ
+    #list去重有序
+    def get_cf_ports(self):
+        lst = self.CF_UPDATE_PORTS
+        return [x for i, x in enumerate(lst) if x not in lst[:i]]
 
 if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
@@ -762,9 +771,10 @@ if __name__ == "__main__":
                 needSchedules.append(autoServ.alive)
                 #更新cf Origin Rules
                 with ThreadPoolExecutor(max_workers=5) as cfExecutor:
-                    autoServ.logger.info(f"{autoServ.hostfullName}::{autoServ.CF_UPDATE_PORTS}")
+                    update_list = autoServ.get_cf_ports()
+                    autoServ.logger.info(f"{autoServ.hostfullName}::{update_list}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
-                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS,list(set(autoServ.CF_UPDATE_PORTS)),autoServ.CF_USERNAME,autoServ.CF_TOKEN)
+                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS,update_list,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
                 #更新cf Origin Rules
             print(f"sched::{AutoServ.sched.state}")
             if 1 in needSchedules:

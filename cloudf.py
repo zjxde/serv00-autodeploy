@@ -246,7 +246,7 @@ class CFServer(object):
 
         if isNormal:
             if updateDomains and len(updateDomains)>0:
-                rules = self.listOriginRules(zoneId)
+                rules = self.listOriginRules(normalZoneId)
                 newPorts = []
                 oldPorts = []
                 for domain in updateDomains:
@@ -279,4 +279,3 @@ class CFServer(object):
 
 if __name__ == '__main__':
     print("=============")
-    CFServer.run(["pan.junx066.us.kg","v.junx066.us.kg"],[48028,62313],"zjxdede3@126.com","b019f3f0f29df637e9196e8c3c0a0e5d7b232")
