@@ -209,6 +209,8 @@ class AutoServ(object):
         self.SSL_DOMAINS=[self.DOMAIN]
         if 'ssl_domains' in account:
             self.SSL_DOMAINS = account["ssl_domains"].split(",")
+        else:
+            self.SSL_DOMAINS = [self.DOMAIN]
 
         try:
             self.ssh = self.getSshClient()
@@ -760,9 +762,9 @@ if __name__ == "__main__":
                 needSchedules.append(autoServ.alive)
                 #更新cf Origin Rules
                 with ThreadPoolExecutor(max_workers=5) as cfExecutor:
-                    autoServ.logger.info(f"{autoServ.hostfullName}{autoServ.USE_CF}::{autoServ.CF_UPDATE_PORTS}")
+                    autoServ.logger.info(f"{autoServ.hostfullName}::{autoServ.CF_UPDATE_PORTS}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
-                        cfExecutor.submit(CFServer.run,autoServ.DOMAIN,list(set(autoServ.CF_UPDATE_PORTS)),autoServ.CF_USERNAME,autoServ.CF_TOKEN)
+                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS,list(set(autoServ.CF_UPDATE_PORTS)),autoServ.CF_USERNAME,autoServ.CF_TOKEN)
                 #更新cf Origin Rules
             print(f"sched::{AutoServ.sched.state}")
             if 1 in needSchedules:
