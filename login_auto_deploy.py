@@ -51,10 +51,10 @@ class AutoServ(object):
         #如果ip配置存在 优先显示
         #域名
         self.DOMAIN = account["domain"]
+        self.nodeHost = self.DOMAIN
         if 'ip' in account:
             self.nodeHost = account['ip']
-        else:
-            self.nodeHost = self.DOMAIN
+
         self.USERNAME = account["username"]
         #self.logger.info(self.DOMAIN +"::"+self.USERNAME +" run.................")
         #密码
@@ -108,6 +108,8 @@ class AutoServ(object):
                 self.NODEJS_NAME = tgConfig['nodejs_name']
             if 'del_ssl' in tgConfig:
                 self.DEL_SSL = tgConfig['del_ssl']
+            if 'show_node_info' in tgConfig:
+                self.showNodeInfo = tgConfig['show_node_info']
 
 
 
@@ -179,14 +181,18 @@ class AutoServ(object):
         #self.serv = Serv00(self.PANNELNUM, self.logininfo,self.HOSTNAME)
         self.hostfullName = self.USERNAME+"::server"+str(self.SERVER_TYPE)+"::"
         self.USE_CF = 0
+        self.CF_IP = None
         if 'use_cf' in account and account['use_cf'] ==1:
             self.USE_CF = 1
             if 'cf_token' in tgConfig:
                 self.CF_TOKEN = tgConfig['cf_token']
             if 'cf_username' in tgConfig:
                 self.CF_USERNAME = tgConfig['cf_username']
+            if 'cf_ip' in tgConfig:
+                self.CF_IP = tgConfig['cf_ip']
             if self.CF_TOKEN:
                 self.logger.info(self.hostfullName+"set cf_token success")
+
         if 'reset' in account and account['reset'] == 1:
             self.RESET = 1
             self.OUTO_NPM_INSTALL = 1
@@ -206,13 +212,18 @@ class AutoServ(object):
         self.cfserver = None
         self.CF_UPDATE = 0
         self.CF_UPDATE_PORTS=[]
-        self.SSL_DOMAINS=[self.DOMAIN]
+        self.SSL_DOMAINS=[self.nodeHost]
         if 'ssl_domains' in account:
-            self.SSL_DOMAINS = account["ssl_domains"].split(",")
+            self.SSL_DOMAINS = []
+            if "," not in account["ssl_domains"]:
+                for i in range(min(self.NODE_NUM,3)):
+                    self.SSL_DOMAINS.append(account["ssl_domains"])
+            else:
+                self.SSL_DOMAINS = account["ssl_domains"].split(",")
         else:
             self.SSL_DOMAINS = []
             for i in range(min(self.NODE_NUM,3)):
-                self.SSL_DOMAINS.append(self.DOMAIN)
+                self.SSL_DOMAINS.append(self.nodeHost)
 
         try:
             self.ssh = self.getSshClient()
@@ -282,18 +293,21 @@ class AutoServ(object):
         file.flush()
         self.nodeHost = self.SSL_DOMAINS[index]
         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
-        if self.showNodeInfo:
-            self.logger.info("url is::"+msg)
-        else:
-            self.logger.info(self.nodeHost+str(port))
+
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
-        if self.USE_CF:
-            self.CF_UPDATE_PORTS.append(port)
         self.startCmd(templateName,port,ssh)
         if self.USE_CF:
             self.CF_UPDATE_PORTS.append(port)
-            msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+            domain = "cdn."+self.nodeHost
+            if self.CF_IP:
+                domain = self.CF_IP
+            msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
+            #msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
         #异步发送节点链接到tg
+        if self.showNodeInfo:
+            self.logger.info("url is::"+msg)
+        else:
+            self.logger.info(self.hostfullName+str(port))
         if self.SEND_TG:
             self.sendTgMsgSync(msg)
             #tasklist = [self.sendTelegramMessage(msg),self.sendTgMsgLog()]
@@ -348,7 +362,7 @@ class AutoServ(object):
             ports = serv.getports();
             #首次部署帮开通权限，申请端口
             if self.IS_FIRST:
-                serv.runMain(self.SSL_DOMAINS,ports[:min(self.NODE_NUM, 2)],self.DEL_SSL)
+                serv.runMain([self.DOMAIN],ports[:min(self.NODE_NUM, 2)],self.DEL_SSL,1)
 
             i = 0
             for index,data in enumerate(self.portUidInfos):
@@ -525,7 +539,10 @@ class AutoServ(object):
                     if self.USE_CF:
                         self.CF_UPDATE = 1
                         self.CF_UPDATE_PORTS.append(int(port))
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
+                        domain = "cdn."+self.nodeHost
+                        if self.CF_IP:
+                            domain = self.CF_IP
+                        msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
                     else:
                         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
 
@@ -633,8 +650,10 @@ class AutoServ(object):
                     msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     if self.USE_CF:
                         self.CF_UPDATE_PORTS.append(port)
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(80)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
-
+                        domain = "cdn."+self.nodeHost
+                        if self.CF_IP:
+                            domain = self.CF_IP
+                        msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
                     else:
@@ -655,7 +674,7 @@ class AutoServ(object):
     def forceConfig(self):
         #使用cf 需要重新申请证书，重置部署
         if self.USE_CF:
-            self.IS_FIRST = 1
+            self.IS_FIRST = 0
             self.RESET = 1
             self.OUTO_NPM_INSTALL = 1
         else:
@@ -785,7 +804,7 @@ if __name__ == "__main__":
                     update_list = autoServ.get_cf_ports()
                     autoServ.logger.info(f"{autoServ.hostfullName}::{update_list}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
-                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS,update_list,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
+                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS[0],autoServ.DOMAIN,update_list,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
                 #更新cf Origin Rules
             print(f"sched::{AutoServ.sched.state}")
             if 1 in needSchedules:

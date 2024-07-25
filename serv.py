@@ -260,12 +260,19 @@ class Serv00(object):
             else:
                 self.logger.info(f"enableAppPermission erro {resp.status_code}")
             return 0
-   #处理主方法
-    def runMain(self,domains,ports,isForce):
+    """
+    处理主方法
+    domains:域名集合
+    ports：端口
+    isForce：是否强行删除
+    cnameType：是否是cf cname配置方式
+    """
+    def runMain(self,domains,ports,isForce,cnameType):
         #serv = Serv00(pannelnum,logininfo,hostname)
         serv = self
         enableRes = serv.enableAppPermission()
         serv.logger.info(f"{domains} enableAppPermission state::{enableRes}")
+        length = len(domains)
         #服务器只提供2个id,只帮申请2个端口
         if ports and len(ports)>0:
             results = []
@@ -273,19 +280,33 @@ class Serv00(object):
             serv.logger.info(f"get ips : {ips} nums:{nums}")
             if ips and len(ips)>0:
                 for index, ip in enumerate(ips):
-                    if ip_nums[ip] == '0' or isForce:
-                        domain = domains[index]
-                        serv.delSertificate(domain)
+                    servDomain = domains[index]
+                    if ip_nums[ip] == '1':
+                        if not cnameType or isForce:
+                            serv.delSertificate(servDomain)
+                        else:
+                            serv.logger.info(f"{servDomain}  ssl certificate exisit...")
+                            break
+                    else:
+                        if not cnameType:
                         #绑定proxy端口
                         #websites = serv.getWebsites()
-                        res = serv.addWebsite(domain, ports[index])
-                        if res and res == domain:
-                            serv.logger.info(f"{domain} add ssl certificate start,please waiting...")
-                            #申请证书
-                            res = serv.addSertificate(ips[index], domain)
-                            if res and res == domain:
+                            res = serv.addWebsite(servDomain, ports[index])
+                            if res and res == servDomain:
+                                serv.logger.info(f"{servDomain} add ssl certificate start,please waiting...")
+                                #申请证书
+                                res = serv.addSertificate(ips[index], servDomain)
+                                if res and res == servDomain:
+                                    results.append(res)
+                                    serv.logger.info(f"{servDomain} add ssl certificate success")
+                        else:
+                            serv.logger.info(f"{servDomain} add ssl certificate start,please waiting...")
+                            res = serv.addSertificate(ips[index], servDomain)
+                            if res and res == servDomain:
                                 results.append(res)
-                                serv.logger.info(f"{domain} add ssl certificate success")
+                                serv.logger.info(f"{servDomain} add ssl certificate success")
+                        if length<=1:
+                            break
 
             return results
 
