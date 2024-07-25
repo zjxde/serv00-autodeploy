@@ -25,6 +25,7 @@ class CFServer(object):
         self.LIST_ZONES = 'https://api.cloudflare.com/client/v4/zones'
         self.LIST_DNS_RECONDS = 'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records'
         self.LIST_ORIGIN_RULES = 'https://api.cloudflare.com/client/v4/zones/{zone_id}/rulesets/phases/http_request_origin/entrypoint'
+        self.DELETE_DNS_RECORD = 'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{dns_record_id}'
         self.session = requests.session()
     """
     获取域名列表
@@ -50,6 +51,20 @@ class CFServer(object):
                 dnsRecords = jsonpath.jsonpath(data, "$.result[*]")
 
                 return dnsRecords
+        return None
+    def deleteDNSByZoneId(self, zoneId,recordId):
+        if zoneId:
+            url = self.DELETE_DNS_RECORD.format(zone_id=zoneId,dns_record_id=recordId)
+            rep = self.session.delete(url, headers=self.headers)
+            result={}
+            data = json.loads(rep.content)
+            result['success'] = data['success']
+            result['errors'] = data['errors']
+            result['messages'] = data['messages']
+            self.logger.info(f"{result}")
+            if rep and rep.status_code == 200:
+                dnsRecordId = jsonpath.jsonpath(data, "$.result.id")
+                return dnsRecordId
         return None
     def createDNSByZoneId(self,zoneId,ownDomain,servDomain,proxied):
         dnsRecordId = None
@@ -202,14 +217,18 @@ class CFServer(object):
                 for record in dnsRecords:
                     recordName = record['name']
                     domain = recordName
-                    if ownDomain in recordName:
-                        isNormal = 1
-                        updateDomains[recordName] = ports
-                        if record['proxied']:
-                            self.logger.info(domain + "::已经开启dns代理")
+                    if ownDomain == recordName:
+                        recordContext = record['content']
+                        if servDomain==recordContext:
+                            isNormal = 1
+                            updateDomains[recordName] = ports
+                            if record['proxied']:
+                                self.logger.info(domain + "::已经开启dns代理")
+                            else:
+                                self.logger.info(domain + "::未开启dns代理，请务必先配置")
+                            break
                         else:
-                            self.logger.info(domain + "::未开启dns代理，请务必先配置")
-                        break
+                            self.deleteDNSByZoneId(normalZoneId,record['id'])
                 if not isNormal:
                     updateDomains[ownDomain] = ports
                     self.logger.info(recordName + "::未配置域名dns记录，自动帮配置")
