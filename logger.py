@@ -43,6 +43,6 @@ class Mylogger(object):
         return self.getLogger(Mylogger.__name__,logFileName,logLevel,100*1024*1024,2,console)
 
 if __name__ == "__main__":
-    log = Mylogger.getCommonLogger("app2.log",logging.INFO)
+    log = Mylogger.getCommonLogger("app2.log",logging.INFO,1)
     log.info("=-------------------------")
 

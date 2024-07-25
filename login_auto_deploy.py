@@ -2,6 +2,7 @@
 import asyncio
 import concurrent
 import random
+import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
@@ -145,23 +146,7 @@ class AutoServ(object):
             raise Exception('please set the pannelnum')
 
 
-        if self.USERNAME is None:
-            self.logger.error('please set the username')
-            raise Exception('please set the username')
 
-
-        if self.PASSWORD is None:
-            self.logger.error('please set the password')
-            raise Exception('please set the password')
-
-        if self.BASEPATH is None:
-            self.logger.error('please set the app dir basepath')
-            raise Exception('please set the basepath')
-
-
-        self.logger.info("PANNELNUM is "+str(self.PANNELNUM))
-        self.logger.info("USERNAME is "+self.USERNAME)
-        #self.logger.info("BASEPATH is "+self.BASEPATH)
 
         self.logininfo = {}
         self.logininfo['username'] = self.USERNAME
@@ -224,6 +209,23 @@ class AutoServ(object):
             self.SSL_DOMAINS = []
             for i in range(min(self.NODE_NUM,3)):
                 self.SSL_DOMAINS.append(self.nodeHost)
+        if self.USERNAME is None:
+            self.logger.error('please set the username')
+            raise Exception('please set the username')
+
+
+        if self.PASSWORD is None:
+            self.logger.error('please set the password')
+            raise Exception('please set the password')
+
+        if self.BASEPATH is None:
+            self.logger.error('please set the app dir basepath')
+            raise Exception('please set the basepath')
+
+
+        self.logger.info("PANNELNUM is "+str(self.PANNELNUM))
+        self.logger.info("USERNAME is "+self.USERNAME)
+        self.logger.info(self.hostfullName+"BASEPATH is "+self.BASEPATH)
 
         try:
             self.ssh = self.getSshClient()
@@ -532,7 +534,7 @@ class AutoServ(object):
                     if port not in self.uuidPorts:
                         self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
                         self.forceConfig()
-                        continue
+                        break
                     self.nodeHost = self.SSL_DOMAINS[index]
                     #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
@@ -624,7 +626,7 @@ class AutoServ(object):
                         if self.SEND_TG:
                             msg = self.hostfullName+"重新创建部署节点ok，请重新到TG复制最新的节点信息"
                             self.sendTgMsgSync(msg)
-                        continue
+                        break
                     ouuid = self.uuidPorts[str(port)]
                     cmd = "sockstat -l|grep ':"+str(port)+"'|awk '{print$3}'"
                     stdin, stdout, stderr = ssh.exec_command(cmd,get_pty=True)
@@ -761,6 +763,8 @@ class AutoServ(object):
     def get_cf_ports(self):
         lst = self.CF_UPDATE_PORTS
         return [x for i, x in enumerate(lst) if x not in lst[:i]]
+    def get_thread_id(self):
+        return threading.current_thread().ident
 
 if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
@@ -810,7 +814,9 @@ if __name__ == "__main__":
             if 1 in needSchedules:
                 AutoServ.sched.start()
 
-            
+
+
+
             
             
 
