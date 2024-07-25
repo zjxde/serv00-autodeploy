@@ -566,7 +566,12 @@ class AutoServ(object):
             if self.SEND_TG:
                 self.sendTgMsgSync(msg)
 
-            self.forceConfig()
+            #self.forceConfig()
+            if not self.USE_CF:
+                self.IS_FIRST = 0
+            self.RESET = 1
+            self.OUTO_NPM_INSTALL = 1
+            self.main()
 
     def delNodejsFile(self,ssh):
         pidfullpath = self.BASEPATH+"/"+self.PIDPATH
@@ -648,8 +653,14 @@ class AutoServ(object):
 
     #重启，保活，非首次部署不进行重置，申请证书操作
     def forceConfig(self):
-        self.IS_FIRST = 0
-        self.RESET = 0
+        #使用cf 需要重新申请证书，重置部署
+        if self.USE_CF:
+            self.IS_FIRST = 1
+            self.RESET = 1
+            self.OUTO_NPM_INSTALL = 1
+        else:
+            self.RESET = 0
+            self.IS_FIRST = 0
         self.main()
 
     @staticmethod
