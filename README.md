@@ -89,7 +89,7 @@
 **3、Setting->Secrets->actions 添加secrets名称：ENV_CMD,值复制下面内容**
 
 ```
-py restart 20
+py restart 30
 ```
 
 **4、ENV_CONFIG 配置项参数说明**
