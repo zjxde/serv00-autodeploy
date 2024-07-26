@@ -426,8 +426,7 @@ class AutoServ(object):
                         self.logger.info(files)
 
                 while (files and 'No such' in files[0]) or timeout >=0:
-                    files = self.executeNewCmd(ssh, wget,120)[0]
-                    self.logger.info(files)
+
                     timeout = timeout-delayTime
                     stdin, stdout, stderr = self.ssh.exec_command(lscmd,get_pty=True)
                     res = stdout.read().decode()
@@ -435,6 +434,8 @@ class AutoServ(object):
                     if files and self.NODEJS_NAME in files[0]:
                         self.logger.info(self.hostfullName+"main js ok break")
                         break
+                    files = self.executeNewCmd(ssh, wget,120)[0]
+                    self.logger.info(files)
                     self.logger.info(self.hostfullName+"main js ::"+files[0])
                     self.logger.info(wget+"::: try timeout::"+str(timeout))
                     time.sleep(delayTime)
