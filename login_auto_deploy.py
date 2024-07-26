@@ -293,17 +293,19 @@ class AutoServ(object):
         file = sftp_client.file(templateName, "a", -1)
         file.write(newcontent)
         file.flush()
-        self.nodeHost = self.SSL_DOMAINS[index]
-        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
 
+        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
+        self.nodeHost = self.SSL_DOMAINS[index]
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
         if self.USE_CF:
-            self.CF_UPDATE_PORTS.append(port)
-            domain = "cdn."+self.nodeHost
+            self.CF_UPDATE = 1
+            self.CF_UPDATE_PORTS.append(int(port))
+            #nodeHost =
+            domain = self.SSL_DOMAINS[index]
             if self.CF_IP:
                 domain = self.CF_IP
-            msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
+            msg = msg +"\n"+ "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni="+domain+"&type=ws&host="+domain+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
             #msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_80"
         #异步发送节点链接到tg
         if self.showNodeInfo:
@@ -430,6 +432,9 @@ class AutoServ(object):
                     stdin, stdout, stderr = self.ssh.exec_command(lscmd,get_pty=True)
                     res = stdout.read().decode()
                     files = res.split('\r\n')
+                    if files and self.NODEJS_NAME in files[0]:
+                        self.logger.info(self.hostfullName+"main js ok break")
+                        break
                     self.logger.info(self.hostfullName+"main js ::"+files[0])
                     self.logger.info(wget+"::: try timeout::"+str(timeout))
                     time.sleep(delayTime)
@@ -443,7 +448,7 @@ class AutoServ(object):
             self.executeCmd(ssh, cpcmd,5)
             self.logger.info(cpcmd + ":::finish")
             self.logger.info(self.hostfullName+"init env is ok....")
-
+            self.setSSHClient()
 
         except Exception as e:
             self.logger.error(e)
@@ -535,18 +540,20 @@ class AutoServ(object):
                         self.logger.info(self.hostfullName+str(port)+" is not auto create ,continue")
                         self.forceConfig()
                         break
-                    self.nodeHost = self.SSL_DOMAINS[index]
-                    #ouuid = self.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[str(port)]
+                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
+
+                    #ouuid = self.portUidInfos[index]['uuid']
+
                     if self.USE_CF:
                         self.CF_UPDATE = 1
                         self.CF_UPDATE_PORTS.append(int(port))
-                        domain = "cdn."+self.nodeHost
+                        #nodeHost =
+                        domain = self.SSL_DOMAINS[index]
                         if self.CF_IP:
                             domain = self.CF_IP
-                        msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
-                    else:
-                        msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
+                        msg = msg +"\n"+ "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni="+domain+"&type=ws&host="+domain+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
+
 
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
@@ -645,17 +652,18 @@ class AutoServ(object):
                             self.logger.info(f"{self.hostfullName} {pidlist} is running")
                             continue
                     self.logger.info(self.hostfullName+" nodes keepalive restart.....")
+                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     self.nodeHost = self.SSL_DOMAINS[index]
                     templateName = self.FULLPATH+"_"+ouuid+"_"+str(port)+".js"
                     #ouuid = outoServ02.portUidInfos[index]['uuid']
                     ouuid = self.uuidPorts[port]
-                    msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
                     if self.USE_CF:
-                        self.CF_UPDATE_PORTS.append(port)
-                        domain = "cdn."+self.nodeHost
+                        self.CF_UPDATE = 1
+                        self.CF_UPDATE_PORTS.append(int(port))
+                        domain = self.SSL_DOMAINS[index]
                         if self.CF_IP:
                             domain = self.CF_IP
-                        msg = "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni=cdn."+self.nodeHost+"&type=ws&host=cdn."+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
+                        msg = msg +"\n"+ "vless://"+ouuid+"@"+domain+":"+str(443)+"?encryption=none&security=tls&sni="+domain+"&type=ws&host="+domain+"&path=%2F#"+self.USERNAME+"_"+str(port)+"_443"
                     if self.showNodeInfo:
                         self.logger.info("url is::"+msg)
                     else:
@@ -808,7 +816,7 @@ if __name__ == "__main__":
                     update_list = autoServ.get_cf_ports()
                     autoServ.logger.info(f"{autoServ.hostfullName}::{update_list}")
                     if autoServ.USE_CF and autoServ.CF_TOKEN and len(autoServ.CF_UPDATE_PORTS)>0:
-                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS[0],autoServ.DOMAIN,update_list,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
+                        cfExecutor.submit(CFServer.run,autoServ.SSL_DOMAINS,autoServ.DOMAIN,update_list,autoServ.CF_USERNAME,autoServ.CF_TOKEN)
                 #更新cf Origin Rules
             print(f"sched::{AutoServ.sched.state}")
             if 1 in needSchedules:

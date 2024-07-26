@@ -74,7 +74,9 @@ class CFServer(object):
                 "content": servDomain,
                 "name": ownDomain,
                 "proxied": proxied,
-                "type": "CNAME"
+                "proxiable": proxied,
+                "type": "CNAME",
+                "ttl": 1
             }
             dd = json.dumps(dnsRecord)
             rep = self.session.post(url, data=dd,headers=self.headers)
@@ -117,26 +119,24 @@ class CFServer(object):
         if updateDomains and len(updateDomains)>0:
             rules = []
             for domain in updateDomains:
-                ports = updateDomains[domain]
-                if ports and len(ports)>0:
-                    for p in ports:
-                        result = {}
-                        des = domain.split(".")[0]
-                        if zoneId:
-                            url = self.LIST_ORIGIN_RULES.format(zone_id=zoneId)
+                p = updateDomains[domain]
+                result = {}
+                des = domain.split(".")[0]
+                if zoneId:
+                    url = self.LIST_ORIGIN_RULES.format(zone_id=zoneId)
 
-                            rule = {
-                                "action": "route",
-                                "action_parameters": {
-                                    "origin": {
-                                        "port": int(p)
-                                    }
-                                },
-                                "enabled": True,
-                                "description": des,
-                                "expression": "(http.host eq \""+domain+"\")"
+                    rule = {
+                        "action": "route",
+                        "action_parameters": {
+                            "origin": {
+                                "port": int(p)
                             }
-                            rules.append(rule)
+                        },
+                        "enabled": True,
+                        "description": des,
+                        "expression": "(http.host eq \""+domain+"\")"
+                    }
+                    rules.append(rule)
             data = {"description": "domain", "rules": rules}
             dd = json.dumps(data)
             rep = self.session.put(url, data=dd, headers=self.headers)
@@ -194,7 +194,7 @@ class CFServer(object):
     domain:域名
     ports:待更新端口
     """
-    def runMain(self, ownDomain,servDomain, ports):
+    def runMain(self, ownDomains,servDomain, ports):
 
 
         updateDomains = {}
@@ -202,50 +202,52 @@ class CFServer(object):
         domain_zoneNames = dict(zip(zoneNames,zones))
         normalZoneId = 0
         #判断是否存在域名
-        if ownDomain:
-            for zoneName in domain_zoneNames:
-                if zoneName and zoneName == ownDomain:
-                    normalZoneId = domain_zoneNames[zoneName]
-                    break
-        if normalZoneId:
-
-            isNormal = 0
-            ownDomain = "cdn."+ownDomain
-            dnsRecords = self.getDNSByZoneId(normalZoneId)
-            if dnsRecords and len(dnsRecords) > 0:
-                # 查找当前域名是否开启dns
-                for record in dnsRecords:
-                    recordName = record['name']
-                    domain = recordName
-                    if ownDomain == recordName:
-                        recordContext = record['content']
-                        if servDomain==recordContext:
-                            isNormal = 1
-                            updateDomains[recordName] = ports
-                            if record['proxied']:
-                                self.logger.info(domain + "::已经开启dns代理")
-                            else:
-                                self.logger.info(domain + "::未开启dns代理，请务必先配置")
+        if ownDomains and len(ownDomains) >0:
+            for ownDomain in ownDomains:
+                if ownDomain:
+                    for zoneName in domain_zoneNames:
+                        if zoneName and zoneName in ownDomain:
+                            normalZoneId = domain_zoneNames[zoneName]
                             break
-                        else:
-                            self.deleteDNSByZoneId(normalZoneId,record['id'])
-                if not isNormal:
-                    updateDomains[ownDomain] = ports
-                    self.logger.info(recordName + "::未配置域名dns记录，自动帮配置")
-                    self.createDNSByZoneId(normalZoneId,ownDomain,servDomain,True)
+        if normalZoneId:
+            for index,ownDomain in enumerate(ownDomains):
+                isNormal = 0
+                dnsRecords = self.getDNSByZoneId(normalZoneId)
+                if dnsRecords and len(dnsRecords) > 0:
+                    # 查找当前域名是否开启dns
+                    for record in dnsRecords:
+                        recordName = record['name']
+                        domain = recordName
+                        if ownDomain == recordName:
+                            recordContext = record['content']
+                            if servDomain==recordContext:
+                                isNormal = 1
+                                updateDomains[recordName] = ports[index]
+                                if record['proxied']:
+                                    self.logger.info(domain + "::已经开启dns代理")
+                                else:
+                                    self.logger.info(domain + "::未开启dns代理，请务必先配置")
+                                break
+                            else:
+                                self.deleteDNSByZoneId(normalZoneId,record['id'])
+                    if not isNormal:
+                        updateDomains[ownDomain] = ports[index]
+                        self.logger.info(recordName + "::未配置域名dns记录，自动帮配置")
+                        self.createDNSByZoneId(normalZoneId,ownDomain,servDomain,True)
 
-                    #else:
-                    #self.logger.info(recordName + "::未配置域名dns记录，请务必先配置")
+                        #else:
+                        #self.logger.info(recordName + "::未配置域名dns记录，请务必先配置")
 
 
             if updateDomains and len(updateDomains)>0:
                 rules = self.listOriginRules(normalZoneId)
                 oldPorts = []
+                key = ""
+                oldkey = ""
                 for domain in updateDomains:
-                    ports = updateDomains[domain]
-                    key = domain
-                    for port in ports:
-                        key += "_"+str(port)
+                    port = updateDomains[domain]
+                    key += domain
+                    key += "_"+str(port)+"_"
                     if rules and len(rules) > 0:
 
                         for rule in rules:
@@ -255,10 +257,8 @@ class CFServer(object):
                             # 该域名已经配置规则，更新
                             if expression and domain in expression:
                                 port = rule['action_parameters']['origin']['port']
-                                oldPorts.append(port)
-                    oldkey = domain
-                    for port in oldPorts:
-                        oldkey += "_"+str(port)
+                                oldkey += domain
+                                oldkey += "_"+str(port)+"_"
                 if key == oldkey:
                     self.logger.info(f"{domain}:提供的新端口与旧端口一致,不操作")
                 else:
