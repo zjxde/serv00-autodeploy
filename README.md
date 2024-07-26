@@ -58,8 +58,8 @@
     "node_num": 2,
     "usepm2": 0,
     "cf_token": "xxx",
-    "cf_username": "xxx",
-    "ssl_domains": "xxx.username.us.kg"
+    "cf_username": "xxx"
+    
   },
   "accounts": [
     {
@@ -69,7 +69,8 @@
       "pannelnum": 6,
       "cmd":"python reset 20",
       "server_type": 1,
-      "use_cf": 0
+      "use_cf": 1,
+      "ssl_domains": "xxx.username.us.kg,xxx2.username.us.kg"
     },
     {
       "username": "【用户名】",
