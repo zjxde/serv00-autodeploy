@@ -234,6 +234,10 @@ class CFServer(object):
                         updateDomains[ownDomain] = ports[index]
                         self.logger.info(recordName + "::未配置域名dns记录，自动帮配置")
                         self.createDNSByZoneId(normalZoneId,ownDomain,servDomain,True)
+                else:
+                    self.logger.info(ownDomains[index] + "::未配置域名dns记录，自动帮配置")
+                    updateDomains[ownDomain] = ports[index]
+                    self.createDNSByZoneId(normalZoneId,ownDomain,servDomain,True)
 
                         #else:
                         #self.logger.info(recordName + "::未配置域名dns记录，请务必先配置")
