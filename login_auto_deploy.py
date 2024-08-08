@@ -787,10 +787,21 @@ if __name__ == "__main__":
             defaultConfig = envConfig
     except Exception as e:
         print("使用默认环境配置")
+    #手动启动
+    accounts_manual = None
+    try:
+        with open('user_info_manual.json', 'r') as f:
+            accounts_manual = json.load(f)
+    except Exception as e:
+        print("使用自动配置")
+
+
     #args = ['python','keepalive',60]
     # 如果命令
     args = sys.argv
     myAccounts = accounts['accounts']
+    if accounts_manual and not cmd:
+        myAccounts = accounts_manual['accounts']
     tgConfig = accounts['tg_config']
     #runservloop = asyncio.get_event_loop()
     #asyncio.run(runMain())
