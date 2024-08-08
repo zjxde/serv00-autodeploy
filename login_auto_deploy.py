@@ -777,6 +777,7 @@ class AutoServ(object):
 
 if __name__ == "__main__":
     cmd = os.getenv("ENV_CMD")
+    manual = os.getenv("USER_INFO_MANUAL")
     with open('default_config.json', 'r') as f:
         defaultConfig = json.load(f)
     with open('user_info.json', 'r') as f:
@@ -800,7 +801,7 @@ if __name__ == "__main__":
     # 如果命令
     args = sys.argv
     myAccounts = accounts['accounts']
-    if accounts_manual and not cmd:
+    if manual:
         myAccounts = accounts_manual['accounts']
     tgConfig = accounts['tg_config']
     #runservloop = asyncio.get_event_loop()
