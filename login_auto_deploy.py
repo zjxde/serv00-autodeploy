@@ -295,7 +295,7 @@ class AutoServ(object):
         file.flush()
 
         msg = "vless://"+ouuid+"@"+self.nodeHost+":"+str(port)+"?encryption=none&security=none&type=ws&host="+self.nodeHost+"&path=%2F#"+self.USERNAME+"_"+str(port)
-        self.nodeHost = self.SSL_DOMAINS[index]
+        #self.nodeHost = self.SSL_DOMAINS[index]
         #ssh.exec_command('~/.npm-global/bin/pm2 start ' + templateName + ' --name vless')
         self.startCmd(templateName,port,ssh)
         if self.USE_CF:
