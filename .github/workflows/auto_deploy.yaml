@@ -30,7 +30,7 @@ jobs:
       - name: Create user_info_manual.json from environment variable
         run: echo "$USER_INFO_MANUAL" > user_info_manual.json
         env:
-          USER_INFO: ${{ secrets.$USER_INFO_MANUAL}}  # 从GitHub Secrets中获取环境变量
+          USER_INFO: ${{ secrets.USER_INFO_MANUAL}}  # 从GitHub Secrets中获取环境变量
 
       - name: Create env_config from environment variable
         run: echo "$ENV_CONFIG" > env_config.json
